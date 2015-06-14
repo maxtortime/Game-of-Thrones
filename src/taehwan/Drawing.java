@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
@@ -26,10 +28,10 @@ public class Drawing extends PApplet {
 	
 	int curDate;
 	Camera worldCamera;
-	Set<String> nameSet = new HashSet<String>();
+	Set<String> nameSet = new LinkedHashSet<String>();
 	
-	HashMap<String,int[]> namePos = new HashMap<String,int[]>();
-	HashMap<String,Integer> nameColor = new HashMap<String,Integer>();
+	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>();
+	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>();
 	Random forColor = new Random();
 	
 	public void setup() {
@@ -65,6 +67,10 @@ public class Drawing extends PApplet {
 			
 			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 			namePos.put(name,positions);
+		}
+		
+		for (Entry<String,int[]> each : namePos.entrySet()) {
+			println(each.getKey(),Arrays.toString(each.getValue()));
 		}
 		
 		worldCamera = new Camera(); 
@@ -117,8 +123,8 @@ public class Drawing extends PApplet {
 //				rect(rbx+w*2,rbx+id*(w+d)+w,w,w);
 //		}
 		
-		for(int wn = 2 ; wn < weekNum ; wn++)
-			for (int pos = 1 ; pos < rectNum-1 ; pos++) {
+		for(int wn = 1 ; wn < weekNum ; wn++)
+			for (int pos = 0 ; pos < rectNum-1 ; pos++) {
 					
 				fill(0);
 				//text(wn+","+pos,rbx+w*(wn*2-2),rbx+pos*(w+d));
