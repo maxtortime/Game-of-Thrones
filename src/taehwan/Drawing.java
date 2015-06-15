@@ -26,27 +26,24 @@ public class Drawing extends PApplet {
 	final int rectNum = 30;
 	final int weekNum = 52;
 	
-	int curDate;
 	Camera worldCamera;
 	Set<String> nameSet = new LinkedHashSet<String>();
 	
-	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>();
-	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>();
-	Random forColor = new Random();
+	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
+	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
+	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 	
 	public void setup() {
-		size(640,480);
+		size(1024,640);
 		table = loadTable("../2007_.csv","header");
 		
 		println(table.getRowCount() + " total rows in table"); 
 		
 		for(TableRow row : table.rows()) {
 			nameSet.add(row.getString("name"));
-			
 			records.add(new Record(row));
 		}
 		
-
 		for (String name : nameSet) {
 			int[] positions = new int[weekNum];
 			
@@ -54,7 +51,7 @@ public class Drawing extends PApplet {
 				int end = rectNum * week-1;
 				
 				for (int start = rectNum*week-rectNum; start < end ; start++) {
-					if(records.get(start).getName().contains(name)) {
+					if(records.get(start).getName().equals(name)) {
 						positions[week-1] =  records.get(start).getPos()-1;
 						break;
 					}
@@ -69,80 +66,58 @@ public class Drawing extends PApplet {
 			namePos.put(name,positions);
 		}
 		
-		for (Entry<String,int[]> each : namePos.entrySet()) {
-			println(each.getKey(),Arrays.toString(each.getValue()));
-		}
-		
 		worldCamera = new Camera(); 
 	}
 	
 	public void draw() {
-		//noStroke();
+		noStroke();
 		background(200);
 		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw(); 
 		
-		// 날짜가 같다면 ry가 같아야 함
-		// w는 상수 
-		// 이전 rect 그릴 때 좌표
-		// rbx = qbx-w, rby = rbx+id*(w+d) = qby, w, w
-		//rect(20,100,30,30);
 		
-		// quad 그릴 때 좌표
-		/*
-		 * qx = qbx+w = rbx+w*2, 
-		 * qy = qby+w = rby+w = rbx+id*(w+d)+w , 
-		 * qbx+w = rbx+w*2, 
-		 * qy+w = rby+w*2 = rbx+id*(w+d)+w*2, 
-		 * qbx = rbx + w,
-		 * qby+w = rbx+id*(w+d)+w, 
-		 * qbx = rbx+w, 
-		 * qby = rby = rbx+id*(w+d)
-		 */
-		 
-		//quad(80+30,130,80+30,130+30,50,100+30,50,100);
-		
-		// 다음 rect 그릴 떄 좌표
-		/* rnx = qx = rbx+w*2, 
-		 * rny = qy = rbx+id*(w+d)+w, 
-		 * w, w
-		 */
-		//rect(80+30,130,30,30);
-		
-//		for (int id = 0 ; id < rectNum ; id++) {
-//				rect(rbx,rbx+id*(w+d),w,w);
-//				quad(rbx+w*2,
-//						rbx+id*(w+d)+w,
-//						rbx+w*2,
-//						rbx+id*(w+d)+w*2,
-//						rbx + w,
-//						rbx+id*(w+d)+w,
-//						rbx+w,
-//						rbx+id*(w+d));
-//				rect(rbx+w*2,rbx+id*(w+d)+w,w,w);
-//		}
-		
-		for(int wn = 1 ; wn < weekNum ; wn++)
+		for(int wn = 0 ; wn < weekNum-1 ; wn++)
 			for (int pos = 0 ; pos < rectNum-1 ; pos++) {
-					
-				fill(0);
-				//text(wn+","+pos,rbx+w*(wn*2-2),rbx+pos*(w+d));
+				int nextPos = 0;
 				int colors  = 0;
 				
+				fill(0);
+				
+				
 				for (Entry<String,int[]> each : namePos.entrySet()) {
-					if(pos == each.getValue()[wn-1]) {
+				
+					if(pos == each.getValue()[wn]) {
 						colors = nameColor.get(each.getKey());
-						text(each.getKey(),rbx+w*(wn*10-2),rbx+pos*(w+d));// wn *2 원래
+						
+						nextPos = each.getValue()[wn+1];
+						
+						if (nextPos ==-1)
+							nextPos = pos;
+						
+						if (each.getKey().length()<15)
+							text(each.getKey(),rbx+w*(wn*2-2),rbx+pos*(w+d));
+						else {
+							text(each.getKey().substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
+						}
 						break;
 					}
 					else {
 						colors = 192;
 					}
+					
 				}
 				
+				text(pos+","+nextPos,rbx+w*(wn*2-2),rbx+pos*(w+d)+d);
+				
 				fill(colors);
-				rect(rbx+w*(wn*10-2),rbx+pos*(w+d),w,w); // wn *2 원래
+				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
+				
+				
+				quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
+						rbx+w*wn*2,rbx+nextPos*(w+d),
+						rbx+w*wn*2,rbx+w+nextPos*(w+d),
+						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
 			}
 	}
 	
