@@ -27,31 +27,30 @@ public class Drawing extends PApplet {
 	final int weekNum = 52;
 	
 	float zoom = 1;
-	float h = 0;
-	
+
 	Camera worldCamera;
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
 	
+
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
-	
+
 	public void setup() {
-		size(1024,640);
+		size(640,480);
 		table = loadTable("../2007_.csv","header");
 		
 		println(table.getRowCount() + " total rows in table");
 		
 		
 		for(TableRow row : table.rows()) {
-			//nameSet.add(row.getString("name"));
+			nameSet.add(row.getString("name"));
 			genreSet.add(row.getString("genre"));
 			records.add(new Record(row));
 		}
-		
-		
+
 		for (String name : nameSet) {
 			int[] positions = new int[weekNum];
 			
@@ -59,7 +58,7 @@ public class Drawing extends PApplet {
 				int end = rectNum * week-1;
 				
 				for (int start = rectNum*week-rectNum; start < end ; start++) {
-					if(records.get(start).getName().equals(name)) {
+					if(records.get(start).getName().contains(name)) {
 						positions[week-1] =  records.get(start).getPos()-1;
 						break;
 					}
@@ -74,14 +73,15 @@ public class Drawing extends PApplet {
 			namePos.put(name,positions);
 		}
 		
+
 		for (String genre : genreSet)
 			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-		
+
 		worldCamera = new Camera(); 
 	}
 	
 	public void draw() {
-		noStroke();
+		//noStroke();
 		background(200);
 		
 		if( key == 'o'){
@@ -93,17 +93,16 @@ public class Drawing extends PApplet {
 			key = '2';
 		}
 		
+
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
-		
-		for(int wn = 0 ; wn < weekNum-1 ; wn++)
+	
+		for(int wn = 1 ; wn < weekNum ; wn++)
 			for (int pos = 0 ; pos < rectNum-1 ; pos++) {
-				int nextPos = 0;
-				int colors  = 0;
-				
+					
 				fill(0);
-				
+				int colors  = 0;
 				
 				for (Entry<String,int[]> each : namePos.entrySet()) {
 					if(pos == each.getValue()[wn]) {
@@ -127,7 +126,6 @@ public class Drawing extends PApplet {
 							text(each.getKey(),rbx+w*(wn*2-2),rbx+pos*(w+d));
 						else
 							text(each.getKey().substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
-						
 						break;
 					}
 					else {
@@ -135,9 +133,7 @@ public class Drawing extends PApplet {
 						nextPos = -100; // null 인 애들은 quad를 안 그려주려고
 					}
 				}
-				
-				
-				
+
 				fill(colors);
 				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
 
@@ -147,8 +143,6 @@ public class Drawing extends PApplet {
 						rbx+w*wn*2,rbx+nextPos*(w+d),
 						rbx+w*wn*2,rbx+w+nextPos*(w+d),
 						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
-				
-				
 			}
 	}
 	
