@@ -29,11 +29,14 @@ public class Drawing extends PApplet {
 	Camera worldCamera;
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
+	Set<String> platformSet = new LinkedHashSet<String>();
 	
 	LinkedHashMap<String,Table> subRecords = new LinkedHashMap<String,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
 	public void setup() {
@@ -59,6 +62,7 @@ public class Drawing extends PApplet {
 				
 				nameSet.add(row.getString("name"));
 				genreSet.add(row.getString("genre"));
+				platformSet.add(row.getString("platform"));
 				
 				records.add(new Record(row));
 			}
@@ -79,8 +83,7 @@ public class Drawing extends PApplet {
 		
 		for (Entry<String,Table> records : subRecords.entrySet()) {
 
-			records.getValue().sort("genre");
-			
+			records.getValue().sort("platform");
 			
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
@@ -94,12 +97,15 @@ public class Drawing extends PApplet {
 		
 		for (String genre : genreSet)
 			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		
+		for (String platform : platformSet)
+			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 
 		worldCamera = new Camera(); 
 	}
 	
 	public void draw() {
-		//noStroke();
+		noStroke();
 		background(200);
 		
 		if( key == 'o'){
@@ -110,7 +116,6 @@ public class Drawing extends PApplet {
 			zoom *= 0.9;
 			key = '2';
 		}
-		
 
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
@@ -126,14 +131,19 @@ public class Drawing extends PApplet {
 				for (Entry<String,int[]> each : namePos.entrySet()) {
 					if(pos == each.getValue()[wn]) {
 						
-						 //color by genre
+						
+						//color by etc ...
 						for (Record r : records) {
 							if (r.getName().equals(each.getKey())) {
-								colors = genreColor.get(r.getGenre());
-
+								//genre
+								//colors = genreColor.get(r.getGenre());
+								
+								//flatform
+								colors = platformColor.get(r.getPlatform());
 								break;
 							}
 						}
+						
 						
 						//color by name
 						//colors = nameColor.get(each.getKey());
