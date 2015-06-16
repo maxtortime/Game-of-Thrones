@@ -1,5 +1,6 @@
 package taehwan;
 
+import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -20,6 +21,9 @@ import processing.data.TableRow;
 public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
+	
+	
+	
 	final int w = 50;
 	final int d = 15; // 사각형간의 차이
 	final int rbx = 20; 
@@ -32,48 +36,68 @@ public class Drawing extends PApplet {
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
 	
-
+	LinkedHashMap<String,Table> subRecords = new LinkedHashMap<String,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
 	public void setup() {
-		size(640,480);
+		size(960,960);
 		table = loadTable("../2007_.csv","header");
 		
 		println(table.getRowCount() + " total rows in table");
 		
 		
-		for(TableRow row : table.rows()) {
-			nameSet.add(row.getString("name"));
-			genreSet.add(row.getString("genre"));
-			records.add(new Record(row));
-		}
+		// Table 을 30개씩 쪼개기 위함
+		for (int week = 1 ; week < weekNum ; week++) {
+			int end = rectNum * week - 1;
 
-		for (String name : nameSet) {
-			int[] positions = new int[weekNum];
+			Table subTable = new Table();
 			
-			for (int week = 1 ; week < weekNum ; week++) {
-				int end = rectNum * week-1;
+			for (int col = 0 ; col < table.getColumnCount() ; col++)
+				subTable.addColumn(table.getColumnTitle(col));
+			
+			for (int start = rectNum*(week-1); start < end ; start++) {
+				TableRow row = table.getRow(start);
+
+				subTable.addRow(row);
 				
-				for (int start = rectNum*week-rectNum; start < end ; start++) {
-					if(records.get(start).getName().contains(name)) {
-						positions[week-1] =  records.get(start).getPos()-1;
-						break;
-					}
-					else {
-						positions[week-1] = -1;
-					}
-					
-				}
+				nameSet.add(row.getString("name"));
+				genreSet.add(row.getString("genre"));
+				
+				records.add(new Record(row));
 			}
 			
-			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-			namePos.put(name,positions);
+			subRecords.put(subTable.getRow(0).getString("date"),subTable);
 		}
 		
+		// 이름 별로 랭킹을 담는 역할
+		for (String name : nameSet) {
+			int[] positions = new int[weekNum];
+			Arrays.fill(positions, -1);
+			
+			namePos.put(name, positions);
+			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		}
+		
+		int idx = 0;
+		
+		for (Entry<String,Table> records : subRecords.entrySet()) {
 
+			records.getValue().sort("genre");
+			
+			
+			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
+				records.getValue().getRow(i).setInt("pos", i);
+			
+			for (TableRow row : records.getValue().rows()) {
+				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+			}
+			
+			idx++;
+		}
+		
 		for (String genre : genreSet)
 			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 
@@ -97,9 +121,10 @@ public class Drawing extends PApplet {
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
-	
-		for(int wn = 1 ; wn < weekNum ; wn++)
-			for (int pos = 0 ; pos < rectNum-1 ; pos++) {
+		
+		for(int wn = 1 ; wn < weekNum-1 ; wn++)
+			for (int pos = 0 ; pos < rectNum ; pos++) {
+				int nextPos = 0;
 					
 				fill(0);
 				int colors  = 0;
@@ -107,6 +132,7 @@ public class Drawing extends PApplet {
 				for (Entry<String,int[]> each : namePos.entrySet()) {
 					if(pos == each.getValue()[wn]) {
 						
+						 //color by genre
 						for (Record r : records) {
 							if (r.getName().equals(each.getKey())) {
 								colors = genreColor.get(r.getGenre());
@@ -114,9 +140,16 @@ public class Drawing extends PApplet {
 								break;
 							}
 						}
+						
+						//color by name
 						//colors = nameColor.get(each.getKey());
 						
-						nextPos = each.getValue()[wn+1];
+						try {
+							nextPos = each.getValue()[wn+1];
+						}
+						catch(ArrayIndexOutOfBoundsException e) {
+							nextPos = pos;
+						}
 						
 						if (nextPos ==-1)
 							nextPos = pos;
@@ -138,7 +171,7 @@ public class Drawing extends PApplet {
 				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
 
 				
-				if (nextPos != -100) 
+				if (nextPos != -100 ) 
 					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
 						rbx+w*wn*2,rbx+nextPos*(w+d),
 						rbx+w*wn*2,rbx+w+nextPos*(w+d),
