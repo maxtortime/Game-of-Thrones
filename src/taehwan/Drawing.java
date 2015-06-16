@@ -1,13 +1,9 @@
 package taehwan;
 
-import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
-import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
@@ -21,8 +17,6 @@ import processing.data.TableRow;
 public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
-	
-	
 	
 	final int w = 50;
 	final int d = 15; // 사각형간의 차이
