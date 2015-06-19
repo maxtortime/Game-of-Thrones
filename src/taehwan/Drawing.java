@@ -83,7 +83,8 @@ public class Drawing extends PApplet {
 		
 		for (Entry<String,Table> records : subRecords.entrySet()) {
 
-			records.getValue().sort("platform");
+			//records.getValue().sort("platform");
+			//records.getValue().sort("genre");
 			
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
@@ -131,7 +132,6 @@ public class Drawing extends PApplet {
 				for (Entry<String,int[]> each : namePos.entrySet()) {
 					if(pos == each.getValue()[wn]) {
 						
-						
 						//color by etc ...
 						for (Record r : records) {
 							if (r.getName().equals(each.getKey())) {
@@ -139,14 +139,14 @@ public class Drawing extends PApplet {
 								//colors = genreColor.get(r.getGenre());
 								
 								//flatform
-								colors = platformColor.get(r.getPlatform());
+								//colors = platformColor.get(r.getPlatform());
 								break;
 							}
 						}
 						
 						
 						//color by name
-						//colors = nameColor.get(each.getKey());
+						colors = nameColor.get(each.getKey());
 						
 						try {
 							nextPos = each.getValue()[wn+1];
