@@ -2,14 +2,17 @@ package taehwan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
 import processing.core.PVector;
+import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
 
@@ -36,6 +39,7 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> platformPartSum = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
@@ -81,9 +85,31 @@ public class Drawing extends PApplet {
 		
 		int idx = 0;
 		
+		for (String genre : genreSet) {
+			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			
+			
+		}
+		
+		for (String platform : platformSet) {
+			int sum = 0;
+			/*
+			for (Record r : records) {
+				if(r.getPlatform().equals(platform)) {
+					sum+= r.getWeek();
+				}
+			}
+			*/
+			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			//platformPartSum.put(platform, sum);
+		}
+	
+		
 		for (Entry<String,Table> records : subRecords.entrySet()) {
 
 			//records.getValue().sort("platform");
+			IntDict temp = records.getValue().getIntDict("platform", "week");
+			println(idx+", "+temp);
 			//records.getValue().sort("genre");
 			
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
@@ -96,12 +122,6 @@ public class Drawing extends PApplet {
 			idx++;
 		}
 		
-		for (String genre : genreSet)
-			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-		
-		for (String platform : platformSet)
-			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-
 		worldCamera = new Camera(); 
 	}
 	
@@ -159,7 +179,7 @@ public class Drawing extends PApplet {
 							nextPos = pos;
 						
 						//not height
-						if (each.getKey().length()<15)
+						if (each.getKey().length()<15) // 
 							text(each.getKey(),rbx+w*(wn*2-2),rbx+pos*(w+d));
 						else
 							text(each.getKey().substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
