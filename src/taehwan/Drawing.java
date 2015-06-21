@@ -1,5 +1,6 @@
 package taehwan;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -20,7 +21,7 @@ public class Drawing extends PApplet {
 	ArrayList<Record> records = new ArrayList<Record>();
 	
 	final int w = 30; // 사각형의 크기
-	final int h = 5;
+	final int h = 3;
 	//final int rbx = 20; // 첫 사각형의 x 좌표 
 	int rbx,rby;
 	final int rectNum = 30;
@@ -55,10 +56,12 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
+	LinkedHashMap<String,Boolean> isNameClicked = new LinkedHashMap<String,Boolean>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
-	IntDict rankPos;
+	String overedName = new String();
+	int backColor = 0;
 	
 	public void setup() {
 		size(1200,800);
@@ -115,17 +118,23 @@ public class Drawing extends PApplet {
 			
 			namePos.put(name, positions);
 			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			isNameClicked.put(name, false);
 		}
 		
 		int idx = 0;
+		
 		
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
 			//records.getValue().sort("platform");
 			//records.getValue().sort("genre");
 			
 			//records.getValue().sort("when");
-			
-			
+
+			/*
+			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
+				records.getValue().getRow(i).setInt("pos", i);
+			*/
+
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 			}
@@ -159,69 +168,21 @@ public class Drawing extends PApplet {
 	
 	public void draw() {
 		noStroke();
-		background(20);
-		
+
+		background(200);
+
 		if( key == 'o'){
-			zoom *= 1.1;
-			key = 'h';
+			zoom += 0.1;
+			key = '1';
 		}
 		if(key == 'p'){
-			zoom *= 0.9;
-			key = 'h';
+			zoom -= 0.1;
+			key = '2';
 		}
-		if(key == '1'){
-			temp1 += 0.1;
-			key = 'h';
-		}
-		if(key == '2'){
-			temp2 += 0.1;
-			key = 'h';
-		}
-		if(key == '3'){
-			temp3 += 0.1;
-			key = 'h';
-		}
-		if(key == '4'){
-			temp4 += 0.1;
-			key = 'h';
-		}
-		if(key == '5'){
-			temp5 += 0.1;
-			key = 'h';
-		}
-		if(key == '6'){
-			temp6 += 0.1;
-			key = 'h';
-		}
-		if(key == '7'){
-			temp7 += 0.1;
-			key = 'h';
-		}
-		if(key == '8'){
-			temp8 += 0.1;
-			key = 'h';
-		}
-		if(key == '9'){
-			temp9 += 0.1;
-			key = 'h';
-		}
-		
 
-		println(temp1 + "temp1");
-		println(temp2 + "temp2");
-		println(temp3 + "temp3");
-		println(temp4 + "temp4");
-		println(temp5 + "temp5");
-		println(temp6 + "temp6");
-		println(temp7 + "temp7");
-		println(temp8 + "temp8");
-		println(temp9 + "temp9");
-		
-		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
-		
 		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
 			int wn = each.getKey(); // get index
@@ -233,8 +194,10 @@ public class Drawing extends PApplet {
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
+
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
+				int id = row.getInt("id");
 				String when = row.getString("whenyear");
 				String name = row.getString("name");
 				String genre = row.getString("genre");
@@ -245,6 +208,7 @@ public class Drawing extends PApplet {
 				
 				//int color = nameColor.get(name);
 				int color = whenYearColorMap.get(when);
+				
 			
 				//int color = genreColorMap.get(genre);
 				
@@ -295,10 +259,42 @@ public class Drawing extends PApplet {
 				//	text(dif.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				
 				noStroke();
-				fill(color);
-				rect(rX,rY,w,h);
+	
+				Rectangle cur = new Rectangle(rX,(int) rY,w,w);
+				cur.x-=worldCamera.pos.x;
+				cur.y-=worldCamera.pos.y;
 				
+				cur.x*=zoom;
+				cur.y*=zoom;
+			
 				
+				if (cur.contains(mouseX, mouseY)) {
+					fill(255);
+					stroke(255);
+					overedName = name;
+					fill(0);
+					textSize(50);
+					text(name,worldCamera.pos.x,worldCamera.pos.y+50);
+				}
+				else {
+					if (overedName.equals(name)) {
+						fill(255);
+						stroke(255);
+					}	
+					else {
+						fill(color);
+						stroke(color);
+					}
+				}
+				
+				rect(rX,rY,w,w);
+				/*
+				if (nextPos != -1) {
+					strokeWeight(5);
+					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
+				}
+				*/
+				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
 				
 
 //				if (nextPos != -1) {
