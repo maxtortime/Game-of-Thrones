@@ -14,6 +14,7 @@ import processing.core.PVector;
 import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
+import controlP5.*;
 
 
 @SuppressWarnings("serial")
@@ -162,6 +163,7 @@ public class Drawing extends PApplet {
 				int color = whenColor.get(when);
 				
 				int nextPos = namePos.get(name)[wn];
+2
 				
 				fill(0);
 				// name is too long
