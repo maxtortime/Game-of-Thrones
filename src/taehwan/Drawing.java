@@ -19,12 +19,12 @@ public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
 	
-	final int w = 50;
+	final int w = 50; // 사각형의 크기
 	final int d = 50; // 사각형간의 차이
-	final int rbx = 20; 
+	final int rbx = 20; // 첫 사각형의 x 좌표 
 	final int rectNum = 30;
-	final int weekNum = 408;
-	final int wRatio = 2;
+	final int weekNum = 408; // 51 * (year)
+	final int wInterval = 3;
 	
 	float zoom = 1;
 	int MAXWEEK,MINWEEK;
@@ -33,15 +33,15 @@ public class Drawing extends PApplet {
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
-	Set<String> whenSet = new LinkedHashSet<String>();
+	Set<String> whenYearSet = new LinkedHashSet<String>();
 	
 	ArrayList<Table> tables = new ArrayList<Table>();
 	
 	LinkedHashMap<Integer,Table> subRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
-	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
-	LinkedHashMap<String,Integer> whenColor = new LinkedHashMap<String, Integer>();
+	LinkedHashMap<String,Integer> genreColorMap = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	
@@ -50,9 +50,10 @@ public class Drawing extends PApplet {
 	IntDict rankPos;
 	
 	public void setup() {
-		size(960,960);
+		size(1920,960);
 		table = loadTable("../all.csv","header");
-		
+		Table genrecolor = loadTable("../genrecolor.csv","header");
+		Table yearcolor = loadTable("../yearcolor.csv","header");
 		/*
 		for (int year=2007 ; year < 2012 ; year++) {
 			String filename = "../" + year + "_.csv";
@@ -81,7 +82,7 @@ public class Drawing extends PApplet {
 				nameSet.add(row.getString("name"));
 				genreSet.add(row.getString("genre"));
 				platformSet.add(row.getString("platform"));
-				whenSet.add(row.getString("when"));
+				whenYearSet.add(row.getString("whenyear"));
 				
 				records.add(new Record(row));
 				
@@ -116,15 +117,26 @@ public class Drawing extends PApplet {
 			idx++;
 		}
 		
-		for (String genre : genreSet)
-			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		for (String genre : genreSet) {
+			TableRow rgb = genrecolor.findRow(genre, "genrename");
+			try {
+				genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			} catch (NullPointerException e) {
+				genreColorMap.put(genre, color(255,255,255,120));
+			}
+			
+		}
 		
+		/*
 		for (String platform : platformSet)
 			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		*/
+		for (String when : whenYearSet) {
+			TableRow rgb = yearcolor.findRow(when, "year");
+			
+			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+		}
 		
-		for (String when : whenSet)
-			whenColor.put(when,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-
 		worldCamera = new Camera(); 
 	}
 	
@@ -153,32 +165,43 @@ public class Drawing extends PApplet {
 
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
-				String when = row.getString("when");
+				String when = row.getString("whenyear");
 				String name = row.getString("name");
-				
+				String genre = row.getString("genre");
 	
 				//int color = nameColor.get(name);
-				int color = whenColor.get(when);
-				
+				int color = whenYearColorMap.get(when);
+			
+				//int color = genreColorMap.get(genre);
 				int nextPos = namePos.get(name)[wn];
+				
+				//int rX = rbx+w*(wn*wInterval-2);
+				int rX = rbx+(wn-1)*(wInterval*w-1);
+				int rY = rbx+pos*(w+d);
 				
 				fill(0);
 				// name is too long
 				if (name.length()<15)
-					text(name,rbx+w*(wn*2-2),rbx+pos*(w+d));
+					text(name,rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				else
-					text(name.substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
+					text(name.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				
+				noStroke();
 				fill(color);
+				rect(rX,rY,w,w);
+				if (nextPos != -1) {
+					strokeWeight(5);
+					stroke(color);
 				
-				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
+					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
+				}
 				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
 				
-				if (nextPos != -1)
+				/*
 					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
 						rbx+w*wn*2,rbx+nextPos*(w+d),
 						rbx+w*wn*2,rbx+w+nextPos*(w+d),
-						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
+						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);*/
 			}
 		}
 	}
