@@ -1,5 +1,6 @@
 package taehwan;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -44,10 +45,12 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
+	LinkedHashMap<String,Boolean> isNameClicked = new LinkedHashMap<String,Boolean>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
-	IntDict rankPos;
+	String overedName = new String();
+	int backColor = 0;
 	
 	public void setup() {
 		size(1920,960);
@@ -97,25 +100,28 @@ public class Drawing extends PApplet {
 			
 			namePos.put(name, positions);
 			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			isNameClicked.put(name, false);
 		}
 		
 		int idx = 0;
+		
 		
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
 			//records.getValue().sort("platform");
 			//records.getValue().sort("genre");
 			
 			//records.getValue().sort("when");
-			
+			/*
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
-			
+			*/
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 			}
 			
 			idx++;
 		}
+		
 		
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
@@ -143,7 +149,7 @@ public class Drawing extends PApplet {
 	public void draw() {
 		noStroke();
 		background(200);
-		
+		/*
 		if( key == 'o'){
 			zoom *= 1.1;
 			key = '1';
@@ -152,7 +158,15 @@ public class Drawing extends PApplet {
 			zoom *= 0.9;
 			key = '2';
 		}
-
+	*/
+		if( key == 'o'){
+			zoom += 0.1;
+			key = '1';
+		}
+		if(key == 'p'){
+			zoom -= 0.1;
+			key = '2';
+		}
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
@@ -165,12 +179,14 @@ public class Drawing extends PApplet {
 
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
+				int id = row.getInt("id");
 				String when = row.getString("whenyear");
 				String name = row.getString("name");
 				String genre = row.getString("genre");
 	
 				//int color = nameColor.get(name);
 				int color = whenYearColorMap.get(when);
+				
 			
 				//int color = genreColorMap.get(genre);
 				int nextPos = namePos.get(name)[wn];
@@ -187,12 +203,35 @@ public class Drawing extends PApplet {
 					text(name.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				
 				noStroke();
-				fill(color);
+				
+				Rectangle cur = new Rectangle(rX,rY,w,w);
+				cur.x-=worldCamera.pos.x;
+				cur.y-=worldCamera.pos.y;
+				
+				cur.x*=zoom;
+				cur.y*=zoom;
+			
+				
+				if (cur.contains(mouseX, mouseY)) {
+					fill(255);
+					stroke(255);
+					overedName = name;
+				}
+				else {
+					if (overedName.equals(name)) {
+						fill(255);
+						stroke(255);
+					}	
+					else {
+						fill(color);
+						stroke(color);
+					}
+				}
+				
 				rect(rX,rY,w,w);
+				
 				if (nextPos != -1) {
 					strokeWeight(5);
-					stroke(color);
-				
 					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 				}
 				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
