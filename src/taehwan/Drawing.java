@@ -2,7 +2,6 @@ package taehwan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.Map.Entry;
@@ -14,8 +13,6 @@ import processing.core.PVector;
 import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
-import controlP5.*;
-
 
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
@@ -26,7 +23,7 @@ public class Drawing extends PApplet {
 	final int d = 50; // 사각형간의 차이
 	final int rbx = 20; 
 	final int rectNum = 30;
-	final int weekNum = 52;
+	final int weekNum = 408;
 	final int wRatio = 2;
 	
 	float zoom = 1;
@@ -54,14 +51,15 @@ public class Drawing extends PApplet {
 	
 	public void setup() {
 		size(960,960);
-		//table = loadTable("../2007_.csv","header");
+		table = loadTable("../all.csv","header");
 		
+		/*
 		for (int year=2007 ; year < 2012 ; year++) {
 			String filename = "../" + year + "_.csv";
 			tables.add(loadTable(filename,"header"));
 		}
-		
-		table = tables.get(0);
+		*/
+		//table = tables.get(0);
 		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
@@ -158,12 +156,11 @@ public class Drawing extends PApplet {
 				String when = row.getString("when");
 				String name = row.getString("name");
 				
-				
+	
 				//int color = nameColor.get(name);
 				int color = whenColor.get(when);
 				
 				int nextPos = namePos.get(name)[wn];
-2
 				
 				fill(0);
 				// name is too long
