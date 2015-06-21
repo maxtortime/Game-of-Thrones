@@ -19,12 +19,15 @@ public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
 	
-	final int w = 50; // 사각형의 크기
-	final int d = 50; // 사각형간의 차이
-	final int rbx = 20; // 첫 사각형의 x 좌표 
+	final int w = 30; // 사각형의 크기
+	final int h = 5;
+	//final int rbx = 20; // 첫 사각형의 x 좌표 
+	int rbx,rby;
 	final int rectNum = 30;
 	final int weekNum = 408; // 51 * (year)
-	final int wInterval = 3;
+	final float wInterval = 2.0F;
+	int d;
+	int dif;
 	
 	float zoom = 1;
 	int MAXWEEK,MINWEEK;
@@ -34,7 +37,15 @@ public class Drawing extends PApplet {
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
 	Set<String> whenYearSet = new LinkedHashSet<String>();
-	
+	float temp1 = 3.5F;
+	float temp2 = 3.5F;
+	float temp3 = 3.3F;
+	float temp4 = 2.9F;
+	float temp5 = 2.5F;
+	float temp6 = 2.0F;
+	float temp7 = 1.7F;
+	float temp8 = 1.6F;
+	float temp9 = 1.5F;
 	ArrayList<Table> tables = new ArrayList<Table>();
 	
 	LinkedHashMap<Integer,Table> subRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
@@ -50,7 +61,13 @@ public class Drawing extends PApplet {
 	IntDict rankPos;
 	
 	public void setup() {
-		size(1920,960);
+		size(1200,800);
+		d = height/rectNum; // 사각형간의 차이
+		dif = 0;
+		
+		rby = height;
+		rbx = width;
+		
 		table = loadTable("../all.csv","header");
 		Table genrecolor = loadTable("../genrecolor.csv","header");
 		Table yearcolor = loadTable("../yearcolor.csv","header");
@@ -65,16 +82,17 @@ public class Drawing extends PApplet {
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
+		println("row: "+table.getRowCount());
+		
 		// Table 을 30개씩 쪼개기 위함
-		for (int week = 1 ; week < weekNum ; week++) {
-			int end = rectNum * week - 1;
-
+		for (int week = 0 ; week < weekNum ; week++) {
+			int end = rectNum+week*rectNum ;
 			Table subTable = new Table();
 			
 			for (int col = 0 ; col < table.getColumnCount() ; col++)
 				subTable.addColumn(table.getColumnTitle(col));
-			
-			for (int start = rectNum*(week-1); start < end ; start++) {
+				
+			for (int start = rectNum * week; start < end ; start++) {
 				TableRow row = table.getRow(start);
 				
 				subTable.addRow(row);
@@ -107,8 +125,6 @@ public class Drawing extends PApplet {
 			
 			//records.getValue().sort("when");
 			
-			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
-				records.getValue().getRow(i).setInt("pos", i);
 			
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
@@ -116,15 +132,16 @@ public class Drawing extends PApplet {
 			
 			idx++;
 		}
-		
+
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
-			try {
-				genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-			} catch (NullPointerException e) {
-				genreColorMap.put(genre, color(255,255,255,120));
-			}
 			
+			int R = rgb.getInt("r");
+			int G = rgb.getInt("g");
+			int B = rgb.getInt("b");
+			int A = rgb.getInt("a");
+			
+			genreColorMap.put(genre, color(R,G,B,A));
 		}
 		
 		/*
@@ -142,66 +159,154 @@ public class Drawing extends PApplet {
 	
 	public void draw() {
 		noStroke();
-		background(200);
+		background(20);
 		
 		if( key == 'o'){
 			zoom *= 1.1;
-			key = '1';
+			key = 'h';
 		}
 		if(key == 'p'){
 			zoom *= 0.9;
-			key = '2';
+			key = 'h';
 		}
+		if(key == '1'){
+			temp1 += 0.1;
+			key = 'h';
+		}
+		if(key == '2'){
+			temp2 += 0.1;
+			key = 'h';
+		}
+		if(key == '3'){
+			temp3 += 0.1;
+			key = 'h';
+		}
+		if(key == '4'){
+			temp4 += 0.1;
+			key = 'h';
+		}
+		if(key == '5'){
+			temp5 += 0.1;
+			key = 'h';
+		}
+		if(key == '6'){
+			temp6 += 0.1;
+			key = 'h';
+		}
+		if(key == '7'){
+			temp7 += 0.1;
+			key = 'h';
+		}
+		if(key == '8'){
+			temp8 += 0.1;
+			key = 'h';
+		}
+		if(key == '9'){
+			temp9 += 0.1;
+			key = 'h';
+		}
+		
 
+		println(temp1 + "temp1");
+		println(temp2 + "temp2");
+		println(temp3 + "temp3");
+		println(temp4 + "temp4");
+		println(temp5 + "temp5");
+		println(temp6 + "temp6");
+		println(temp7 + "temp7");
+		println(temp8 + "temp8");
+		println(temp9 + "temp9");
+		
+		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
 		
 		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
-			int wn = each.getKey();
+			int wn = each.getKey(); // get index
+			dif = 0;
 			
 			Table sub = each.getValue();
-
+			int tempWeek = 0;
+			int nextrY = 0;
+			int nextWeek = 0;
+			float temprY = 800;
+			int nextPos = 0;
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
 				String when = row.getString("whenyear");
 				String name = row.getString("name");
 				String genre = row.getString("genre");
-	
+				int week = row.getInt("week");
+				float rY = 0;
+
+				//dif = (int) map(row.getInt("week"),MINWEEK,MAXWEEK,0,height);
+				
 				//int color = nameColor.get(name);
 				int color = whenYearColorMap.get(when);
 			
 				//int color = genreColorMap.get(genre);
-				int nextPos = namePos.get(name)[wn];
 				
+				//nextPos = namePos.get(name)[wn+1];
+				//nextWeek = subRecords.get(wn+1).getRow(nextPos).getInt("week");
 				//int rX = rbx+w*(wn*wInterval-2);
-				int rX = rbx+(wn-1)*(wInterval*w-1);
-				int rY = rbx+pos*(w+d);
+
+				if(week<30000){
+					rY = 800 - week/300*temp1; 
+				}else if(week<40000){
+					rY = 700 - week/400*temp2;
+				}else if(week<50000){
+					rY = 600 - week/500*temp3;
+				}else if(week<60000){
+					rY = 500 - week/600*temp4;
+				}else if(week<80000){
+					rY = 400 - week/800*temp5;
+				}else if(week<100000){
+					rY = 300 - week/1000*temp6;
+				}else if(week<150000){
+					rY = 200 - week/1500*temp7;
+				}else if(week<250000){
+					rY = 100 - week/2500*temp8;
+				}else{
+					rY = -week/10000*temp9;
+				}
 				
+				
+				int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
+				tempWeek = week;
+				temprY = rY;
+				
+				
+				
+				//int rY = rbx+pos*(w+d);
+				
+				//float rY = rbx-week/temp*8;
+				
+				
+				
+				
+				//println(pos,name,rY);
 				fill(0);
 				// name is too long
-				if (name.length()<15)
-					text(name,rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
-				else
-					text(name.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
+				//if (name.length()<15)
+				//	text(name,rX,rY);
+				//else
+				//	text(dif.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				
 				noStroke();
 				fill(color);
-				rect(rX,rY,w,w);
-				if (nextPos != -1) {
-					strokeWeight(5);
-					stroke(color);
+				rect(rX,rY,w,h);
 				
-					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
-				}
-				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
 				
-				/*
-					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
-						rbx+w*wn*2,rbx+nextPos*(w+d),
-						rbx+w*wn*2,rbx+w+nextPos*(w+d),
-						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);*/
+				
+
+//				if (nextPos != -1) {
+//					strokeWeight(5);
+//					stroke(color);
+//					
+//					//line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),);
+//				}
 			}
 		}
 	}
@@ -234,7 +339,11 @@ public class Drawing extends PApplet {
 		      }
 		    } 
 		  } 
-	}  
+	}
+	
+	 public static double logB(double x, double base) {
+		    return Math.log(x) / Math.log(base);
+	  }
 }
 
 
