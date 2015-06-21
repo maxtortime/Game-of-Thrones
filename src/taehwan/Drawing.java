@@ -9,6 +9,7 @@ import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
 import processing.data.IntDict;
 import processing.data.Table;
@@ -21,7 +22,7 @@ public class Drawing extends PApplet {
 	
 	final int w = 50; // 사각형의 크기
 	final int d = 50; // 사각형간의 차이
-	final int rbx = 20; // 첫 사각형의 x 좌표 
+	final int rbx = 110; // 첫 사각형의 x 좌표 
 	final int rectNum = 30;
 	final int weekNum = 408; // 51 * (year)
 	final int wInterval = 3;
@@ -46,11 +47,12 @@ public class Drawing extends PApplet {
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
-
-	IntDict rankPos;
+	
+	int UiColor = color(94,31,47);
 	
 	public void setup() {
 		size(1920,960);
+		
 		table = loadTable("../all.csv","header");
 		Table genrecolor = loadTable("../genrecolor.csv","header");
 		Table yearcolor = loadTable("../yearcolor.csv","header");
@@ -144,6 +146,14 @@ public class Drawing extends PApplet {
 		noStroke();
 		background(200);
 		
+		//upper rect
+		fill(UiColor);
+		rect(0,0,width,90);
+		
+		fill(255);
+		textSize(50);
+		text("GAME OF THORNES",90,38+23);
+		
 		if( key == 'o'){
 			zoom *= 1.1;
 			key = '1';
@@ -152,7 +162,8 @@ public class Drawing extends PApplet {
 			zoom *= 0.9;
 			key = '2';
 		}
-
+		
+		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
@@ -178,14 +189,15 @@ public class Drawing extends PApplet {
 				//int rX = rbx+w*(wn*wInterval-2);
 				int rX = rbx+(wn-1)*(wInterval*w-1);
 				int rY = rbx+pos*(w+d);
-				
+				/*
 				fill(0);
 				// name is too long
+				textSize(12);
 				if (name.length()<15)
 					text(name,rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
 				else
 					text(name.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
-				
+				*/
 				noStroke();
 				fill(color);
 				rect(rX,rY,w,w);
@@ -195,13 +207,6 @@ public class Drawing extends PApplet {
 				
 					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 				}
-				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
-				
-				/*
-					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
-						rbx+w*wn*2,rbx+nextPos*(w+d),
-						rbx+w*wn*2,rbx+w+nextPos*(w+d),
-						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);*/
 			}
 		}
 	}
@@ -233,7 +238,8 @@ public class Drawing extends PApplet {
 		    	  zoom = 1;
 		      }
 		    } 
-		  } 
+		  }
+		 
 	}  
 }
 
