@@ -14,7 +14,6 @@ import processing.core.PVector;
 import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
-import controlP5.*;
 
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
@@ -46,9 +45,7 @@ public class Drawing extends PApplet {
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
-	
-	ControlP5 cp5;
-	Accordion accordion;
+
 	IntDict rankPos;
 	
 	
