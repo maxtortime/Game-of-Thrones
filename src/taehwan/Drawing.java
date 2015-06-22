@@ -46,7 +46,7 @@ public class Drawing extends PApplet {
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
-	Set<String> whenYearSet = new LinkedHashSet<String>();
+	Set<Integer> whenYearSet = new LinkedHashSet<Integer>();
 	Set<String> publisherSet = new LinkedHashSet<String>();
 
 	Set<String> esrbSet = new LinkedHashSet<String>();
@@ -67,7 +67,7 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColorMap = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
-	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
+	LinkedHashMap<Integer,Integer> whenYearColorMap = new LinkedHashMap<Integer, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> publisherColorMap = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> esrbColorMap = new LinkedHashMap<String,Integer>();
@@ -82,15 +82,16 @@ public class Drawing extends PApplet {
 	final int xBase = 0;
 	final int yBase = -110;
 	boolean iswhenChangeClicked = false;
-	boolean isGenreChangeClicked = false;
+	boolean isGenreChangeClicked = true; // 가장 최초이므로
 	boolean isEsrbChangeClicked = false;	
 	boolean isPlatformChangeClicked = false; 
 	boolean isPublisherChangedClicked = false;
 	boolean isRedraw = false;
+	boolean isStacked = false;
 	
 	String overedName = new String();
 	String overedplatform = new String();
-	String overedWhen = new String();
+	int overedWhen = 0;
 	
 	public void setup() {
 		size(1920,960);
@@ -115,8 +116,6 @@ public class Drawing extends PApplet {
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
-		println("row: "+table.getRowCount());
-		
 		// Table 을 30개씩 쪼개기 위함
 		for (int week = 0 ; week < weekNum ; week++) {
 			int end = rectNum+week*rectNum ;
@@ -132,7 +131,7 @@ public class Drawing extends PApplet {
 				nameSet.add(row.getString("name"));
 				genreSet.add(row.getString("genre"));
 				platformSet.add(row.getString("platform"));
-				whenYearSet.add(row.getString("whenyear"));
+				whenYearSet.add(row.getInt("whenyear"));
 				esrbSet.add(row.getString("esrb"));
 				publisherSet.add(row.getString("publisher"));
 			}
@@ -163,7 +162,6 @@ public class Drawing extends PApplet {
 			*/
 
 			for (TableRow row : records.getValue().rows()) {
-				println(idx,row.getInt("pos"));
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 				
 			}
@@ -171,8 +169,6 @@ public class Drawing extends PApplet {
 			idx++;
 		}
 		
-		
-
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
@@ -188,8 +184,8 @@ public class Drawing extends PApplet {
 		for (String platform : platformSet)
 			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		
-		for (String when : whenYearSet) {
-			TableRow rgb = yearcolor.findRow(when, "year");
+		for (Integer when : whenYearSet) {
+			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}
 		
@@ -214,12 +210,13 @@ public class Drawing extends PApplet {
 		noStroke();
 
 		background(51,49,50);
-		String when = "";
+		int when = 0;
 		String name = "";
 		String genre = "";
 		String esrb = "";
 		String platform= "";
 		String publisher ="";
+		int pos = 0;
 
 		int dx = 0;
 		int dy = 0;
@@ -301,12 +298,45 @@ public class Drawing extends PApplet {
 			dif = 0;
 			
 			sub = each.getValue();
+			//println(sub.getRowCount());
+			
+			if (isStacked) {
+				if(iswhenChangeClicked) {
+					sub.sort("whenyear");
+					for (TableRow row : sub.rows()) {
+						println(row.getString("whenyear"));
+					}
+				}
+				else if (isEsrbChangeClicked) {
+					sub.sort("esrb");
+				}
+				else if (isGenreChangeClicked) {
+					sub.sort("genre");
+				}
+				else if (isPlatformChangeClicked) {
+					sub.sort("platform");
+				}
+				else {
+					sub.sort("id");
+				}
+				
+				for (int i = 0 ; i < sub.getRowCount()-1 ; i++)
+					sub.getRow(i).setInt("pos", i);
+			
+				for (TableRow row : sub.rows()) {
+					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				}
+				
+				idx++;
+			}
+			else {
+				sub.sort("id");
+			}
 			int tempWeek = 0;
 			int nextrY = 0;
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
-			//println(sub.getRowCount());
 			Table before = subRecords.get(wn+1);
 			
 			/*
@@ -324,9 +354,9 @@ public class Drawing extends PApplet {
 			}
 			*/
 			for (TableRow row : sub.rows()) {
-				int pos = row.getInt("pos");
+				pos = row.getInt("pos");
 				
-				when = row.getString("whenyear");
+				when = row.getInt("whenyear");
 				name = row.getString("name");
 				genre = row.getString("genre");
 				esrb = row.getString("esrb");
@@ -355,7 +385,6 @@ public class Drawing extends PApplet {
 					color = genreColorMap.get(genre);
 				else if (isPlatformChangeClicked)
 					color = publisherColorMap.get(publisher);
-				
 				else
 					color = genreColorMap.get(genre);
 			
@@ -371,7 +400,7 @@ public class Drawing extends PApplet {
 					overedplatform = platform;
 					overedWhen = when;
 					
-					TableRow rgb = yearcolor.findRow(when, "year");
+					TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 					
 					if (whenYearColorMap.get(overedWhen)==color) {
 						whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
@@ -385,9 +414,9 @@ public class Drawing extends PApplet {
 					}
 				}
 				else {
-					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen.equals(when)) {
+					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
 						//같은 이름
-						TableRow rgb = yearcolor.findRow(when, "year");
+						TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 						if (whenYearColorMap.get(overedWhen)==color) {
 							whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
 							fill(whenYearColorMap.get(overedWhen));
@@ -411,6 +440,7 @@ public class Drawing extends PApplet {
 					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 				}
 				noStroke();
+				//println(name,pos,when);
 				rect(rX,rY,w,w);
 				
 				/*
@@ -579,12 +609,34 @@ public class Drawing extends PApplet {
     			fill(0);
     			text("esrb",downRectX+500,downRectY+50);
     			
+    			//stack click
+    			Rectangle stacked = new Rectangle((int) downRectX+650,(int) downRectY+25,100,50);
+    			stacked.x-=worldCamera.pos.x;
+    			stacked.y-=worldCamera.pos.y;
+    			
+    			//stack change
+    			if (mousePressed && stacked.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				
+    				isStacked =true;
+    				
+    			}
+    			else {
+    				fill(0,255,0);
+    				isStacked =false;
+    			}
+    			
+    			rect(downRectX+650,downRectY+25,100,50);
+    			textSize(25);
+    			fill(0);
+    			text("stack",downRectX+650,downRectY+50);
+    			
     			
 			fill(255);
 				textFont(GOT,50);
 				text("GAME  OF  THORNES",worldCamera.pos.x+dx+90,worldCamera.pos.y+dy+73);
-				textFont(DIN,20);
-				text(overedName,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+				textFont(DIN,30);
+				text(overedName+"...year: "+when,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
 	
