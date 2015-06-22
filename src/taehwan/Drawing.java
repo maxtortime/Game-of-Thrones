@@ -16,8 +16,7 @@ import processing.data.TableRow;
 
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
-	Table table;
-	ArrayList<Record> records = new ArrayList<Record>();
+	Table table,yearcolor;
 	
 	final int w = 50;
 	final int d = 50; // 사각형간의 차이
@@ -52,28 +51,22 @@ public class Drawing extends PApplet {
 	public void setup() {
 		size(960,960);
 		table = loadTable("../all.csv","header");
-		
-		/*
-		for (int year=2007 ; year < 2012 ; year++) {
-			String filename = "../" + year + "_.csv";
-			tables.add(loadTable(filename,"header"));
-		}
-		*/
+		yearcolor = loadTable("../yearcolor.csv","header");
+	
 		//table = tables.get(0);
 		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
 		// Table 을 30개씩 쪼개기 위함
-		for (int week = 1 ; week < weekNum ; week++) {
-			int end = rectNum * week - 1;
-
+		for (int week = 0 ; week < weekNum ; week++) {
+			int end = rectNum+week*rectNum ;
 			Table subTable = new Table();
 			
 			for (int col = 0 ; col < table.getColumnCount() ; col++)
 				subTable.addColumn(table.getColumnTitle(col));
-			
-			for (int start = rectNum*(week-1); start < end ; start++) {
+				
+			for (int start = rectNum * week; start < end ; start++) {
 				TableRow row = table.getRow(start);
 				
 				subTable.addRow(row);
@@ -81,10 +74,9 @@ public class Drawing extends PApplet {
 				nameSet.add(row.getString("name"));
 				genreSet.add(row.getString("genre"));
 				platformSet.add(row.getString("platform"));
-				whenSet.add(row.getString("when"));
-				
-				records.add(new Record(row));
-				
+				whenSet.add(row.getString("whenyear"));
+				//esrbSet.add(row.getString("esrb"));
+				//publisherSet.add(row.getString("publisher"));
 			}
 			subRecords.put(week,subTable);
 		}
@@ -122,8 +114,11 @@ public class Drawing extends PApplet {
 		for (String platform : platformSet)
 			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		
-		for (String when : whenSet)
-			whenColor.put(when,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		for (String when : whenSet) {
+			TableRow rgb = yearcolor.findRow(when, "year");
+			whenColor.put(when, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			//whenColor.put(when,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		}
 
 		worldCamera = new Camera(); 
 	}
@@ -150,10 +145,10 @@ public class Drawing extends PApplet {
 			int wn = each.getKey();
 			
 			Table sub = each.getValue();
-
+			println(sub.getRowCount());
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
-				String when = row.getString("when");
+				String when = row.getString("whenyear");
 				String name = row.getString("name");
 				
 	
@@ -172,13 +167,13 @@ public class Drawing extends PApplet {
 				fill(color);
 				
 				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
-				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
 				
-				if (nextPos != -1)
-					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
-						rbx+w*wn*2,rbx+nextPos*(w+d),
-						rbx+w*wn*2,rbx+w+nextPos*(w+d),
-						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
+				
+				//if (nextPos != -1)
+				//	quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
+				//		rbx+w*wn*2,rbx+nextPos*(w+d),
+				//		rbx+w*wn*2,rbx+w+nextPos*(w+d),
+				//		rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
 			}
 		}
 	}
