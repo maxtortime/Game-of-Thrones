@@ -306,21 +306,21 @@ public class Drawing extends PApplet {
 					sub.sort("esrb");
 					println("esrb...............");
 					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
+						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
 					}
 				}
 				else if (isGenreChangeClicked) {
 					sub.sort("genre");
 					println("genre...............");
 					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
+						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
 					}
 				}
 				else if (isPlatformChangeClicked) {
 					sub.sort("platform");
 					println("platform...............");
 					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
+						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
 					}
 				}
 				else if (isPublisherChangedClicked) {
@@ -334,7 +334,7 @@ public class Drawing extends PApplet {
 					println("id2...............");
 					//sub.sort("id");
 					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
+						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
 					}
 				}
 				
@@ -348,9 +348,9 @@ public class Drawing extends PApplet {
 			}
 			else {
 				println("id3..........");
-				sub.sort("id");
+				//sub.sort("id");
 				for (TableRow r : sub.rows()) {
-					println(r.getString("name"),r.getString("pos"));
+					println(r.getInt("id"),r.getString("name"),r.getString("pos"));
 				}
 			}
 			
