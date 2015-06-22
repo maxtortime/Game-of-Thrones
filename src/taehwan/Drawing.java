@@ -24,7 +24,7 @@ public class Drawing extends PApplet {
 	Table publisherColor;
 	Table esrbColor;
 	PFont DIN,GOT;
-	PImage CROWN,Footer,Header;
+	PImage CROWN,Footer,Header,stackIcon;
 	final int w = 30; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -93,6 +93,7 @@ public class Drawing extends PApplet {
 	boolean isSales = false;
 	
 	String overedName = new String();
+	int overedWeek = 0;
 	String overedplatform = new String();
 	int overedWhen = 0;
 	
@@ -104,6 +105,7 @@ public class Drawing extends PApplet {
 		CROWN = loadImage("../crown.png");
 		Footer = loadImage("../Footer.png");
 		Header =  loadImage("../Header.png");
+		stackIcon = loadImage("../stackicon.png");
 		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
@@ -494,6 +496,7 @@ public class Drawing extends PApplet {
 					overedName = name;
 					overedplatform = platform;
 					overedWhen = when;
+					overedWeek = week;
 					
 					TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 					
@@ -562,65 +565,56 @@ public class Drawing extends PApplet {
     			float downRectY = footerY+60;
     			
     			//genreChange click
-    			Rectangle genreChange = new Rectangle((int) downRectX+47,(int) downRectY+25+50,100,50);
+    			Rectangle genreChange = new Rectangle((int) downRectX+47,(int) downRectY+25,46,46);
     			
     			genreChange.x-=worldCamera.pos.x;
     			genreChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				
     				iswhenChangeClicked = false;
     				isEsrbChangeClicked = false;
     				isPlatformChangeClicked = false;
     				isPublisherChangedClicked =false;
     				isGenreChangeClicked = true;
-    				
     			}
-    			else {
-    				fill(0,255,0);
-    				
-    			}
-    			rect(downRectX+47,downRectY+25,45.709f,45.833f);
-    			//genreChange
-    			textSize(25);
-    			fill(0);
-    			text("genre",downRectX+47,downRectY+50);
     			
-    			//plaform click
-    			Rectangle plaformhange = new Rectangle((int) downRectX+240,(int) downRectY+25,100,50);
+    			if(isGenreChangeClicked)
+    				fill(216,82,62);
+    			else
+    				fill(255,255,255,0);
+    			
+    			rect(downRectX+47,downRectY+25,45.709f,45.833f);
+    			
+    			//plaform
+    			Rectangle plaformhange = new Rectangle((int) downRectX+240,(int) downRectY+25,46,46);
     			
     			plaformhange.x-=worldCamera.pos.x;
     			plaformhange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && plaformhange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				
+    			
     				iswhenChangeClicked = false;
     				isEsrbChangeClicked = false;
     				isPublisherChangedClicked =false;
     				isGenreChangeClicked = false;
     				isPlatformChangeClicked = true;
     			}
-    			else {
-    				fill(0,255,0);
-    				
-    			}
+    			
+    			if(isPlatformChangeClicked)
+    				fill(216,82,62);
+    			else
+    				fill(255,255,255,0);
     			rect(downRectX+240,downRectY+25,45.709f,45.833f);
     			
     			//plaform draw
-    			textSize(25);
-    			fill(0);
-    			text("Platform",downRectX+200,downRectY+50);
     			
     			//esrbChange click
-    			Rectangle esrbChange = new Rectangle((int) downRectX+478,(int) downRectY+25,100,50);
+    			Rectangle esrbChange = new Rectangle((int) downRectX+478,(int) downRectY+25,46,46);
     			esrbChange.x-=worldCamera.pos.x;
     			esrbChange.y-=worldCamera.pos.y;
     			
     			//esrbChange
     			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
     				iswhenChangeClicked = false;
     				isPlatformChangeClicked = false;
     				
@@ -628,47 +622,43 @@ public class Drawing extends PApplet {
     				isGenreChangeClicked = false;
     				isEsrbChangeClicked = true;
     			}
-    			else {
-    				fill(0,255,0);
-    			}
+    			
+    			if(isEsrbChangeClicked)
+    				fill(216,82,62);
+    			else
+    				fill(255,255,255,0);
     			
     			rect(downRectX+478,downRectY+25,45.709f,45.833f);
-    			textSize(25);
-    			fill(0);
-    			text("esrb",downRectX+478,downRectY+50);
+    			
     			
     			//publisherChange click
-    			Rectangle publisherChange = new Rectangle((int) downRectX+665,(int) downRectY+25,100,50);
+    			Rectangle publisherChange = new Rectangle((int) downRectX+665,(int) downRectY+25,46,46);
     			publisherChange.x-=worldCamera.pos.x;
     			publisherChange.y-=worldCamera.pos.y;
     			
     			//publisherChange
     			if (mousePressed && publisherChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
     				iswhenChangeClicked = false;
     				isPlatformChangeClicked = false;
     				isGenreChangeClicked = false;
     				isEsrbChangeClicked = false;
     				isPublisherChangedClicked =true;
     			}
-    			else {
-    				fill(0,255,0);
-    			}
+    			
+    			if(isPublisherChangedClicked)
+    				fill(216,82,62);
+    			else
+    				fill(255,255,255,0);
     			
     			rect(downRectX+665,downRectY+25,45.709f,45.833f);
-    			textSize(25);
-    			fill(0);
-    			text("Publisher",downRectX+665,downRectY+50);
     			
     			//whenChange click
-    			Rectangle whenChange = new Rectangle((int) downRectX+915,(int) downRectY+25,100,50);
+    			Rectangle whenChange = new Rectangle((int) downRectX+915,(int) downRectY+25,46,46);
     			
     			whenChange.x-=worldCamera.pos.x;
     			whenChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				
     				isPlatformChangeClicked = false;
     				isGenreChangeClicked = false;
     				isEsrbChangeClicked = false;
@@ -676,17 +666,40 @@ public class Drawing extends PApplet {
     				
     				iswhenChangeClicked = true;
     			}
-    			else {
-    				fill(0,255,0);
-    			}
+    			
+    			if(iswhenChangeClicked)
+    				fill(216,82,62);
+    			else
+    				fill(255,255,255,0);
+    			
     			rect(downRectX+915,downRectY+25,45.709f,45.833f);
-    			//whenChange
-    			textSize(25);
-    			fill(0);
-    			text("When",downRectX+915,downRectY+50);
-    			/*
+    			
+    			
+    			//stack click
+    			Rectangle stacked = new Rectangle((int) downRectX+1165,(int) downRectY+12,100,50);
+    			stacked.x-=worldCamera.pos.x;
+    			stacked.y-=worldCamera.pos.y;
+    			
+    			//stack change
+    			if (mousePressed && stacked.contains(mouseX, mouseY)) {
+    				
+    				if(isStacked)
+    					isStacked = false;
+    				else
+    					isStacked = true;
+    				delay(500);
+    				
+    			}
+    			
+    			if(isStacked)
+    				image(stackIcon,downRectX+1165,downRectY+12);
+    			
+    			
+    			fill(255,255,255,0);
+    			rect(downRectX+1165,downRectY+12,61,83);
+    			
     			//salesChange click
-    			Rectangle salesChange = new Rectangle((int) downRectX+800,(int) downRectY+25,100,50);
+    			Rectangle salesChange = new Rectangle((int) downRectX+1405,(int) downRectY+25,100,50);
     			
     			salesChange.x-=worldCamera.pos.x;
     			salesChange.y-=worldCamera.pos.y;
@@ -697,44 +710,23 @@ public class Drawing extends PApplet {
     					isSales = false;
     				else 
     					isSales = true;
+    				delay(500);
     			}
     			else {
     				fill(0,255,0);
     				
     			}
-    			rect(downRectX+800,downRectY+25,45.709f,45.833f);
+    			rect(downRectX+1405,downRectY+25,45.709f,45.833f);
     			//salesChange
     			textSize(25);
     			fill(0);
-    			text("Sales",downRectX+800,downRectY+50);
+    			text("Sales",downRectX+1405,downRectY+50);
     			
-    			//stack click
-    			Rectangle stacked = new Rectangle((int) downRectX+950,(int) downRectY+25,100,50);
-    			stacked.x-=worldCamera.pos.x;
-    			stacked.y-=worldCamera.pos.y;
     			
-    			//stack change
-    			if (mousePressed && stacked.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				if(isStacked)
-    					isStacked = false;
-    				else
-    					isStacked = true;
-    				
-    			}
-    			else {
-    				fill(0,255,0);
-    				
-    			}
     			
-    			rect(downRectX+950,downRectY+25,45.709f,45.833f);
-    			textSize(25);
-    			fill(0);
-    			text("stack",downRectX+950,downRectY+50);
-    			*/
     			
 			fill(255);
-			text(overedName+"...year: "+when,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
 	
