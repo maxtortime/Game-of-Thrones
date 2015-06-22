@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.Stack;
 
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -23,8 +24,9 @@ public class Drawing extends PApplet {
 	Table yearcolor;
 	Table publisherColor;
 	Table esrbColor;
+	Table platformColor;
 	PFont DIN,GOT;
-	PImage CROWN,Footer,Header,stackIcon;
+	PImage CROWN,Footer,Header,stackIcon,salesIcon;
 	final int w = 30; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -78,6 +80,7 @@ public class Drawing extends PApplet {
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
+	Stack<LinkedHashMap<Integer,Table>> forRecordStack = new Stack<LinkedHashMap<Integer,Table>>();
 	
 	int UiColor = color(94,31,47);
 	int color = 0;
@@ -106,6 +109,7 @@ public class Drawing extends PApplet {
 		Footer = loadImage("../Footer.png");
 		Header =  loadImage("../Header.png");
 		stackIcon = loadImage("../stackicon.png");
+		salesIcon =  loadImage("../salesicon.png");
 		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
@@ -118,6 +122,7 @@ public class Drawing extends PApplet {
 		yearcolor = loadTable("../yearcolor.csv","header");
 		esrbColor = loadTable("../esrb.csv","header");
 		publisherColor = loadTable("../publishercolor.csv","header");
+		platformColor = loadTable("../platformcolor.csv","header");
 		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
@@ -175,6 +180,8 @@ public class Drawing extends PApplet {
 			idx++;
 		}
 		
+		forRecordStack.push(subRecords);
+		
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
@@ -187,8 +194,18 @@ public class Drawing extends PApplet {
 			genreColorMap.put(genre, color(R,G,B,A));
 
 		}
-		for (String platform : platformSet)
-			platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		for (String platform : platformSet) {
+			//platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			
+			TableRow rgb = platformColor.findRow(platform, "platform");
+			try {
+				platformColorMap.put(platform,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			} catch (NullPointerException e) {
+				platformColorMap.put(platform,color(192,192,192));
+			}
+			
+		}
+			
 		
 		for (Integer when : whenYearSet) {
 			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
@@ -333,7 +350,6 @@ public class Drawing extends PApplet {
 				
 			}
 			else {
-				idx++;
 				
 			}
 			
@@ -480,6 +496,7 @@ public class Drawing extends PApplet {
 					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
 					int rY = rbx+pos*(w+d);
 					cur = new Rectangle(rX, rY, w,w);
+					
 					if (nextPos != -1) {
 						strokeWeight(7);
 						stroke(color);
@@ -496,8 +513,8 @@ public class Drawing extends PApplet {
 					overedName = name;
 					overedplatform = platform;
 					overedWhen = when;
-					overedWeek = week;
 					
+					println(whenYearColorMap.get(when),color);
 					TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 					
 					if (whenYearColorMap.get(overedWhen)==color) {
@@ -506,36 +523,23 @@ public class Drawing extends PApplet {
 						
 						whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 					}
-					/*
-					else {
-						fill(color);
-						stroke(color);
-					}
-					*/
+					
 				}
 				else {
-					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
+					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen== when) {
 						//같은 이름
 						TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 						if (whenYearColorMap.get(overedWhen)==color) {
 							whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-							color = whenYearColorMap.get(overedWhen);
+							color= whenYearColorMap.get(overedWhen);
+							
 							whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 						}
-						/*
-						else {
-							fill(color);
-						}
-						*/
 						
-					}
-					/*
-					else {
-						// 아예 아님
-						fill(color);
-						stroke(color);
-					}
-					*/
+						
+						
+					}	
+					
 				}
 				
 				
@@ -676,36 +680,32 @@ public class Drawing extends PApplet {
     			
     			
     			//stack click
-    			Rectangle stacked = new Rectangle((int) downRectX+1165,(int) downRectY+12,100,50);
+    			Rectangle stacked = new Rectangle((int) downRectX+1166,(int) downRectY+11,100,50);
     			stacked.x-=worldCamera.pos.x;
     			stacked.y-=worldCamera.pos.y;
     			
     			//stack change
     			if (mousePressed && stacked.contains(mouseX, mouseY)) {
     				
-    				if(isStacked)
-    					isStacked = false;
-    				else
-    					isStacked = true;
+    				isStacked=true;
     				delay(500);
     				
     			}
     			
     			if(isStacked)
-    				image(stackIcon,downRectX+1165,downRectY+12);
+    				image(stackIcon,downRectX+1166,downRectY+11);
     			
     			
     			fill(255,255,255,0);
-    			rect(downRectX+1165,downRectY+12,61,83);
+    			rect(downRectX+1166,downRectY+11,61,83);
     			
     			//salesChange click
-    			Rectangle salesChange = new Rectangle((int) downRectX+1405,(int) downRectY+25,100,50);
+    			Rectangle salesChange = new Rectangle((int) downRectX+1407,(int) downRectY+17,120,69);
     			
     			salesChange.x-=worldCamera.pos.x;
     			salesChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && salesChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
     				if(isSales)
     					isSales = false;
     				else 
@@ -713,15 +713,13 @@ public class Drawing extends PApplet {
     				delay(500);
     			}
     			else {
-    				fill(0,255,0);
-    				
     			}
-    			rect(downRectX+1405,downRectY+25,45.709f,45.833f);
-    			//salesChange
-    			textSize(25);
-    			fill(0);
-    			text("Sales",downRectX+1405,downRectY+50);
     			
+    			fill(255,255,255,0);
+    			rect(downRectX+1407,downRectY+17,120,69);
+    			if(isSales)
+    				image(salesIcon,downRectX+1407,downRectY+17);
+    				
     			
     			
     			
