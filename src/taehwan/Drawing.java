@@ -311,48 +311,12 @@ public class Drawing extends PApplet {
 		
 		int idx = 0;
 		
-		for (Entry<Integer, Table> each : subRecords.entrySet()) {
+		
+		
+		for (Entry<Integer, Table> each : forRecordStack.peek().entrySet()) {
 			int wn = each.getKey(); // get index
 			dif = 0;
 			sub = each.getValue();
-			
-			if (isStacked) {
-				if(iswhenChangeClicked) {
-					sub.sort("whenyear");
-				}
-				else if (isEsrbChangeClicked) {
-					sub.sort("esrb");
-				}
-				else if (isGenreChangeClicked) {
-					sub.sort("genre");
-				}
-				else if (isPlatformChangeClicked) {
-					sub.sort("platform");
-				}
-				else if (isPublisherChangedClicked) {
-					sub.sort("publisher");
-				}
-				else {
-					sub.sort("id");
-				}
-				
-				
-				for (int i = 0 ; i < sub.getRowCount() ; i++)
-					sub.getRow(i).setInt("pos", i+1);
-				
-
-				for (TableRow row : sub.rows()) {
-					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
-					
-				}
-				
-				idx++;
-				
-			}
-			else {
-				
-			}
-			
 		
 			int tempWeek = 0;
 			int nextrY = 0;
@@ -542,12 +506,10 @@ public class Drawing extends PApplet {
 					
 				}
 				
-				
-				
 			}
 		}
 		
-		isStacked =false;
+		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
 		
@@ -680,24 +642,50 @@ public class Drawing extends PApplet {
     			
     			
     			//stack click
-    			Rectangle stacked = new Rectangle((int) downRectX+1166,(int) downRectY+11,100,50);
+    			Rectangle stacked = new Rectangle((int) downRectX+1166,(int) downRectY+11,63,81);
     			stacked.x-=worldCamera.pos.x;
     			stacked.y-=worldCamera.pos.y;
     			
     			//stack change
-    			if (mousePressed && stacked.contains(mouseX, mouseY)) {
-    				
-    				isStacked=true;
-    				delay(500);
-    				
+    			if (mousePressed && stacked.contains(mouseX, mouseY)) {	
+    				if(isStacked) {
+    					isStacked =false;
+    					forRecordStack.pop();
+    				}
+    				else {
+    					isStacked = true;
+    					
+    				}
     			}
     			
-    			if(isStacked)
+    			if(isStacked) {
     				image(stackIcon,downRectX+1166,downRectY+11);
+    				
+    				if(isPlatformChangeClicked) {
+						changeRecord("platform");
+					
+					}
+					else if (isGenreChangeClicked) {
+						changeRecord("genre");
+					
+					}
+					else if (isEsrbChangeClicked) {
+						changeRecord("esrb");
+					
+					}
+					else if (isPublisherChangedClicked) {
+						changeRecord("publisher");
+					
+					}
+					else if (iswhenChangeClicked) {
+						changeRecord("whenyear");
+					
+					}
+    			}
     			
     			
     			fill(255,255,255,0);
-    			rect(downRectX+1166,downRectY+11,61,83);
+    			rect(downRectX+1166,downRectY+11,63,81);
     			
     			//salesChange click
     			Rectangle salesChange = new Rectangle((int) downRectX+1407,(int) downRectY+17,120,69);
@@ -710,9 +698,7 @@ public class Drawing extends PApplet {
     					isSales = false;
     				else 
     					isSales = true;
-    				delay(500);
-    			}
-    			else {
+    				
     			}
     			
     			fill(255,255,255,0);
@@ -727,6 +713,60 @@ public class Drawing extends PApplet {
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
+	
+	void changeRecord(String type) {
+		LinkedHashMap<Integer,Table> splitedRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
+		
+		// Table 을 30개씩 쪼개기 위함
+		for (int week = 0 ; week < weekNum ; week++) {
+			int end = rectNum+week*rectNum ;
+			Table subTable = new Table();
+			
+			for (int col = 0 ; col < table.getColumnCount() ; col++)
+				subTable.addColumn(table.getColumnTitle(col));
+				
+			for (int start = rectNum * week; start < end ; start++) {
+				TableRow row = table.getRow(start);
+				subTable.addRow(row);
+			
+			}
+			
+			subTable.sort(type);
+			splitedRecords.put(week,subTable);
+		}
+		
+			namePos.clear();
+		
+		// 이름 별로 랭킹 및 색을 저장.
+		for (String name : nameSet) {
+			int[] positions = new int[weekNum];
+			Arrays.fill(positions, -1);
+			
+			namePos.put(name, positions);
+		}
+		
+				
+		int idx = 0;
+		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
+
+		for (Entry<Integer,Table> records : splitedRecords.entrySet()) {
+		
+			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
+				records.getValue().getRow(i).setInt("pos", i+1);
+			
+
+			for (TableRow row : records.getValue().rows()) {
+				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				
+			}
+			
+			idx++;
+		}
+				
+		
+		forRecordStack.push(splitedRecords);
+		redraw();
+	}
 	
 	class Camera { 
 		  PVector pos; //Camera's position  
