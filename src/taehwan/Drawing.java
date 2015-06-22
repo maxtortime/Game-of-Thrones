@@ -65,12 +65,14 @@ public class Drawing extends PApplet {
 	
 	LinkedHashMap<Integer,Table> subRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
-	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
+	
+	LinkedHashMap<String,Integer> nameColorMap = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColorMap = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	LinkedHashMap<Integer,Integer> whenYearColorMap = new LinkedHashMap<Integer, Integer>();
-	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> platformColorMap = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> publisherColorMap = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> esrbColorMap = new LinkedHashMap<String,Integer>();
+	
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	LinkedHashMap<String,Boolean> isNameClicked = new LinkedHashMap<String,Boolean>();
 	
@@ -88,6 +90,7 @@ public class Drawing extends PApplet {
 	boolean isPublisherChangedClicked = false;
 	boolean isRedraw = false;
 	boolean isStacked = false;
+	boolean isSales = false;
 	
 	String overedName = new String();
 	String overedplatform = new String();
@@ -144,7 +147,7 @@ public class Drawing extends PApplet {
 			Arrays.fill(positions, -1);
 			
 			namePos.put(name, positions);
-			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			nameColorMap.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
 		int idx = 0;
@@ -182,7 +185,7 @@ public class Drawing extends PApplet {
 
 		}
 		for (String platform : platformSet)
-			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		
 		for (Integer when : whenYearSet) {
 			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
@@ -197,8 +200,13 @@ public class Drawing extends PApplet {
 		for (String publisher : publisherSet) {
 			/*
 			TableRow rgb = publisherColor.findRow(publisher, "publisher");
-			publisherColorMap.put(publisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			try {
+				publisherColorMap.put(publisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			} catch (NullPointerException e) {
+				publisherColorMap.put(publisher, color(192));
+			}
 			*/
+			
 			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
@@ -216,6 +224,7 @@ public class Drawing extends PApplet {
 		String esrb = "";
 		String platform= "";
 		String publisher ="";
+	
 		int pos = 0;
 
 		int dx = 0;
@@ -275,63 +284,77 @@ public class Drawing extends PApplet {
 				key = 'h';
 			}
 		}
-		/*
-		println(temp1 + "temp1");
-		println(temp2 + "temp2");
-		println(temp3 + "temp3");
-		println(temp4 + "temp4");
-		println(temp5 + "temp5");
-		println(temp6 + "temp6");
-		println(temp7 + "temp7");
-		println(temp8 + "temp8");
-		println(temp9 + "temp9");
 
-		*/
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom2);
 		
-		int idx = 0;
-		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
 			int wn = each.getKey(); // get index
 			dif = 0;
-			
 			sub = each.getValue();
-			//println(sub.getRowCount());
 			
 			if (isStacked) {
 				if(iswhenChangeClicked) {
 					sub.sort("whenyear");
-					for (TableRow row : sub.rows()) {
-						println(row.getString("whenyear"));
+					println("whenyear...............");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
 					}
 				}
 				else if (isEsrbChangeClicked) {
 					sub.sort("esrb");
+					println("esrb...............");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
+					}
 				}
 				else if (isGenreChangeClicked) {
 					sub.sort("genre");
+					println("genre...............");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
+					}
 				}
 				else if (isPlatformChangeClicked) {
 					sub.sort("platform");
+					println("platform...............");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
+					}
+				}
+				else if (isPublisherChangedClicked) {
+					sub.sort("publisher");
+					println("publisher...............");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
+					}
 				}
 				else {
-					sub.sort("id");
+					println("id2...............");
+					//sub.sort("id");
+					for (TableRow r : sub.rows()) {
+						println(r.getString("name"),r.getString("pos"));
+					}
 				}
 				
-				for (int i = 0 ; i < sub.getRowCount()-1 ; i++)
-					sub.getRow(i).setInt("pos", i);
-			
-				for (TableRow row : sub.rows()) {
-					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				
+				for (int i = 0 ; i < sub.getRowCount() ; i++) {
+					sub.getRow(i).setInt("pos", i+1);
+				
+					namePos.get(sub.getRow(i).getString("name"))[i] = sub.getRow(i).getInt("pos");
 				}
 				
-				idx++;
 			}
 			else {
+				println("id3..........");
 				sub.sort("id");
+				for (TableRow r : sub.rows()) {
+					println(r.getString("name"),r.getString("pos"));
+				}
 			}
+			
+		
 			int tempWeek = 0;
 			int nextrY = 0;
 			int nextWeek = 0;
@@ -362,20 +385,22 @@ public class Drawing extends PApplet {
 				esrb = row.getString("esrb");
 				platform = row.getString("platform");
 				publisher = row.getString("publisher");
-				//int week = row.getInt("week");
+				int week = row.getInt("week");
 				
 				if(wn+1>=408)
 					nextPos = -1;
 				else
 					nextPos = namePos.get(name)[wn+1];
 				
-				/*
+				
 				if (nextPos==-1) {
 					nextWeek = 0;
 				}
+				else if (nextPos-1 <0)
+					nextWeek = 0;
 				else
 					nextWeek = before.getInt(nextPos-1, "week");
-					*/
+					
 				
 				if(iswhenChangeClicked)
 					color = whenYearColorMap.get(when);
@@ -384,17 +409,106 @@ public class Drawing extends PApplet {
 				else if (isGenreChangeClicked)
 					color = genreColorMap.get(genre);
 				else if (isPlatformChangeClicked)
+					color = platformColorMap.get(platform);
+				else if (isPublisherChangedClicked)
 					color = publisherColorMap.get(publisher);
 				else
 					color = genreColorMap.get(genre);
+				
 			
-				int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
-				int rY = rbx+pos*(w+d);
+				Rectangle cur;
 				
+				if (isSales) {
 				
-				Rectangle cur = new Rectangle(rX, rY, w,w);
+					int id = row.getInt("id");
+	
+					float nrY = 0;
+					float nNrY = 0;
+	
+					if(week<30000){
+						nrY = 800 - week/300*temp1; 
+					}else if(week<40000){
+						nrY = 700 - week/400*temp2;
+					}else if(week<50000){
+						nrY = 600 - week/500*temp3;
+					}else if(week<60000){
+						nrY = 500 - week/600*temp4;
+					}else if(week<80000){
+						nrY = 400 - week/800*temp5;
+					}else if(week<100000){
+						nrY = 300 - week/1000*temp6;
+					}else if(week<150000){
+						nrY = 200 - week/1500*temp7;
+					}else if(week<250000){
+						nrY = 100 - week/2500*temp8;
+					}else if(week<400000){
+						nrY = 100 - week/4000*temp8;
+					}else{
+						nrY = -week/10000*temp9;
+					}
+	
+					if (Math.abs(temprY-nrY)<h){
+						nrY = temprY - h;
+					}
+	
+					if(nextWeek<30000){
+						nNrY = 800 - nextWeek/300*temp1; 
+					}else if(nextWeek<40000){
+						nNrY = 700 - nextWeek/400*temp2;
+					}else if(nextWeek<50000){
+						nNrY = 600 - nextWeek/500*temp3;
+					}else if(nextWeek<60000){
+						nNrY = 500 - nextWeek/600*temp4;
+					}else if(nextWeek<80000){
+						nNrY = 400 - nextWeek/800*temp5;
+					}else if(nextWeek<100000){
+						nNrY = 300 - nextWeek/1000*temp6;
+					}else if(nextWeek<150000){
+						nNrY = 200 - nextWeek/1500*temp7;
+					}else if(nextWeek<250000){
+						nNrY = 100 - nextWeek/2500*temp8;
+					}else if(nextWeek<400000){
+						nNrY = 100 - nextWeek/4000*temp8;
+					}else{
+						nNrY = -nextWeek/10000*temp9;
+					}
+	
+					if (Math.abs(temprY-nrY)<h){
+						nrY = temprY - h;
+					}
+					nrY += 200;
+					nNrY += 200;
+					
+					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1050);
+					tempWeek = week;
+					temprY = nrY;
+			
+					if (nextPos != -1) {
+						strokeWeight(5);
+						stroke(color);
+						line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
+					}
+					noStroke();
+					fill(color);
+					rect(nrX,nrY,w,h);
+					cur = new Rectangle(nrX,(int) nrY, w,h);
+				}
+				else {
+					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
+					int rY = rbx+pos*(w+d);
+					cur = new Rectangle(rX, rY, w,w);
+					if (nextPos != -1) {
+						strokeWeight(7);
+						stroke(color);
+						line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
+					}
+					
+					noStroke();
+					fill(color);
+					rect(rX,rY,w,w);
+				}
 				
-				if (cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
+				if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
 					//마우스를 댄 그 사각형
 					overedName = name;
 					overedplatform = platform;
@@ -404,14 +518,16 @@ public class Drawing extends PApplet {
 					
 					if (whenYearColorMap.get(overedWhen)==color) {
 						whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-						fill(whenYearColorMap.get(overedWhen));
-						stroke(whenYearColorMap.get(overedWhen));
+						color = whenYearColorMap.get(overedWhen);
+						
 						whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 					}
+					/*
 					else {
 						fill(color);
 						stroke(color);
 					}
+					*/
 				}
 				else {
 					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
@@ -419,111 +535,31 @@ public class Drawing extends PApplet {
 						TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 						if (whenYearColorMap.get(overedWhen)==color) {
 							whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-							fill(whenYearColorMap.get(overedWhen));
-							stroke(whenYearColorMap.get(overedWhen));
+							color = whenYearColorMap.get(overedWhen);
 							whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 						}
+						/*
 						else {
 							fill(color);
 						}
+						*/
 						
-						
-					}	
+					}
+					/*
 					else {
 						// 아예 아님
 						fill(color);
 						stroke(color);
 					}
+					*/
 				}
-				if (nextPos != -1) {
-					strokeWeight(7);
-					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
-				}
-				noStroke();
-				//println(name,pos,when);
-				rect(rX,rY,w,w);
 				
-				/*
-				int id = row.getInt("id");
-
-				float nrY = 0;
-				float nNrY = 0;
-
-				if(week<30000){
-					nrY = 800 - week/300*temp1; 
-				}else if(week<40000){
-					nrY = 700 - week/400*temp2;
-				}else if(week<50000){
-					nrY = 600 - week/500*temp3;
-				}else if(week<60000){
-					nrY = 500 - week/600*temp4;
-				}else if(week<80000){
-					nrY = 400 - week/800*temp5;
-				}else if(week<100000){
-					nrY = 300 - week/1000*temp6;
-				}else if(week<150000){
-					nrY = 200 - week/1500*temp7;
-				}else if(week<250000){
-					nrY = 100 - week/2500*temp8;
-				}else if(week<400000){
-					nrY = 100 - week/4000*temp8;
-				}else{
-					nrY = -week/10000*temp9;
-				}
-
-				if (Math.abs(temprY-rY)<h){
-					nrY = temprY - h;
-				}
-
-				if(nextWeek<30000){
-					nNrY = 800 - nextWeek/300*temp1; 
-				}else if(nextWeek<40000){
-					nNrY = 700 - nextWeek/400*temp2;
-				}else if(nextWeek<50000){
-					nNrY = 600 - nextWeek/500*temp3;
-				}else if(nextWeek<60000){
-					nNrY = 500 - nextWeek/600*temp4;
-				}else if(nextWeek<80000){
-					nNrY = 400 - nextWeek/800*temp5;
-				}else if(nextWeek<100000){
-					nNrY = 300 - nextWeek/1000*temp6;
-				}else if(nextWeek<150000){
-					nNrY = 200 - nextWeek/1500*temp7;
-				}else if(nextWeek<250000){
-					nNrY = 100 - nextWeek/2500*temp8;
-				}else if(nextWeek<400000){
-					nNrY = 100 - nextWeek/4000*temp8;
-				}else{
-					nNrY = -nextWeek/10000*temp9;
-				}
-
-				if (Math.abs(temprY-rY)<h){
-					nrY = temprY - h;
-				}
-				nrY += 200;
-				nNrY += 200;
 				
-				int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1050);
-				tempWeek = week;
-				temprY = nrY;
-				*/
-				//noStroke();
-		
-				//Rectangle cur = new Rectangle(nrX,(int) nrY, w,h);
 				
-				/*
-				if (nextPos != -1) {
-					strokeWeight(5);
-					//stroke(color);
-					line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
-				}
-				noStroke();
-				rect(nrX,nrY,w,h);
-				
-				 */
 			}
 		}
 		
+		isStacked =false;
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
 		
@@ -555,7 +591,10 @@ public class Drawing extends PApplet {
     				
     				iswhenChangeClicked = false;
     				isEsrbChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    				isPublisherChangedClicked =false;
     				isGenreChangeClicked = true;
+    				
     			}
     			else {
     				fill(0,255,0);
@@ -567,29 +606,34 @@ public class Drawing extends PApplet {
     			fill(0);
     			text("genre",downRectX+50,downRectY+50);
     			
-    			//whenChange click
-    			Rectangle whenChange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
+    			//plaform click
+    			Rectangle plaformhange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
     			
-    			whenChange.x-=worldCamera.pos.x;
-    			whenChange.y-=worldCamera.pos.y;
+    			plaformhange.x-=worldCamera.pos.x;
+    			plaformhange.y-=worldCamera.pos.y;
     			
-    			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
+    			if (mousePressed && plaformhange.contains(mouseX, mouseY)) {
     				fill(255,0,0);
-    				isGenreChangeClicked = false;
+    				
+    				iswhenChangeClicked = false;
     				isEsrbChangeClicked = false;
-    				iswhenChangeClicked = true;
+    				isPublisherChangedClicked =false;
+    				isGenreChangeClicked = false;
+    				isPlatformChangeClicked = true;
     			}
     			else {
     				fill(0,255,0);
+    				
     			}
     			rect(downRectX+200,downRectY+25,100,50);
-    			//whenChange
+    			
+    			//plaform draw
     			textSize(25);
     			fill(0);
-    			text("When",downRectX+200,downRectY+50);
+    			text("Platform",downRectX+200,downRectY+50);
     			
     			//esrbChange click
-    			Rectangle esrbChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
+    			Rectangle esrbChange = new Rectangle((int) downRectX+350,(int) downRectY+25,100,50);
     			esrbChange.x-=worldCamera.pos.x;
     			esrbChange.y-=worldCamera.pos.y;
     			
@@ -597,8 +641,34 @@ public class Drawing extends PApplet {
     			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
     				fill(255,0,0);
     				iswhenChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    				
+    				isPublisherChangedClicked =false;
     				isGenreChangeClicked = false;
     				isEsrbChangeClicked = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    			}
+    			
+    			rect(downRectX+350,downRectY+25,100,50);
+    			textSize(25);
+    			fill(0);
+    			text("esrb",downRectX+350,downRectY+50);
+    			
+    			//publisherChange click
+    			Rectangle publisherChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
+    			publisherChange.x-=worldCamera.pos.x;
+    			publisherChange.y-=worldCamera.pos.y;
+    			
+    			//publisherChange
+    			if (mousePressed && publisherChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				iswhenChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isEsrbChangeClicked = false;
+    				isPublisherChangedClicked =true;
     			}
     			else {
     				fill(0,255,0);
@@ -607,29 +677,79 @@ public class Drawing extends PApplet {
     			rect(downRectX+500,downRectY+25,100,50);
     			textSize(25);
     			fill(0);
-    			text("esrb",downRectX+500,downRectY+50);
+    			text("Publisher",downRectX+500,downRectY+50);
+    			
+    			//whenChange click
+    			Rectangle whenChange = new Rectangle((int) downRectX+650,(int) downRectY+25,100,50);
+    			
+    			whenChange.x-=worldCamera.pos.x;
+    			whenChange.y-=worldCamera.pos.y;
+    			
+    			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				
+    				isPlatformChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isEsrbChangeClicked = false;
+    				isPublisherChangedClicked =false;
+    				
+    				iswhenChangeClicked = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    			}
+    			rect(downRectX+650,downRectY+25,100,50);
+    			//whenChange
+    			textSize(25);
+    			fill(0);
+    			text("When",downRectX+650,downRectY+50);
+    			
+    			//whenChange click
+    			Rectangle salesChange = new Rectangle((int) downRectX+800,(int) downRectY+25,100,50);
+    			
+    			salesChange.x-=worldCamera.pos.x;
+    			salesChange.y-=worldCamera.pos.y;
+    			
+    			if (mousePressed && salesChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				if(isSales)
+    					isSales = false;
+    				else 
+    					isSales = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    				
+    			}
+    			rect(downRectX+800,downRectY+25,100,50);
+    			//whenChange
+    			textSize(25);
+    			fill(0);
+    			text("Sales",downRectX+800,downRectY+50);
     			
     			//stack click
-    			Rectangle stacked = new Rectangle((int) downRectX+650,(int) downRectY+25,100,50);
+    			Rectangle stacked = new Rectangle((int) downRectX+950,(int) downRectY+25,100,50);
     			stacked.x-=worldCamera.pos.x;
     			stacked.y-=worldCamera.pos.y;
     			
     			//stack change
     			if (mousePressed && stacked.contains(mouseX, mouseY)) {
     				fill(255,0,0);
-    				
-    				isStacked =true;
+    				if(isStacked)
+    					isStacked = false;
+    				else
+    					isStacked = true;
     				
     			}
     			else {
     				fill(0,255,0);
-    				isStacked =false;
+    				//isStacked =false;
     			}
     			
-    			rect(downRectX+650,downRectY+25,100,50);
+    			rect(downRectX+950,downRectY+25,100,50);
     			textSize(25);
     			fill(0);
-    			text("stack",downRectX+650,downRectY+50);
+    			text("stack",downRectX+950,downRectY+50);
     			
     			
 			fill(255);
