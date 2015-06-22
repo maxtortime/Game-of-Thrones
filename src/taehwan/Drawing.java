@@ -221,8 +221,6 @@ public class Drawing extends PApplet {
 				publisherColorMap.put(publisher, color(192));
 			}
 			
-			
-			//publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
 		worldCamera = new Camera(xBase,yBase,zoom);
@@ -597,12 +595,6 @@ public class Drawing extends PApplet {
 					fill(color);
 					rect(rX,rY,w,w);
 				}
-				
-
-				
-				
-				
-	
 				
 			}
 		}
