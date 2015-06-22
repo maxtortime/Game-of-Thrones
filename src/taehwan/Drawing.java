@@ -19,13 +19,20 @@ public class Drawing extends PApplet {
 	Table table;
 
 	final int w = 50; // 사각형의 크기
-	final int d = 50; // 사각형간의 차이
+	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
+	final int h = 10;
+	
 	final int rectNum = 30;
 	final int weekNum = 408; // 51 * (year)
-	final int wInterval = 3;
+	final float wInterval = 3.0F;
+	int dif;
 	
-	float zoom = 0.226f;
+	int nrbx = 0;
+	int nrby = 0;
+	
+	float zoom1 = 0.78f;
+	float zoom2 = 0.226f;
 	int MAXWEEK,MINWEEK;
 	
 	Camera worldCamera;
@@ -33,8 +40,19 @@ public class Drawing extends PApplet {
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
 	Set<String> whenYearSet = new LinkedHashSet<String>();
+
 	Set<String> esrbSet = new LinkedHashSet<String>();
-	
+
+	float temp1 = 3.5F;
+	float temp2 = 3.5F;
+	float temp3 = 3.3F;
+	float temp4 = 2.9F;
+	float temp5 = 2.5F;
+	float temp6 = 2.0F;
+	float temp7 = 1.7F;
+	float temp8 = 1.6F;
+	float temp9 = 1.5F;
+
 	ArrayList<Table> tables = new ArrayList<Table>();
 	
 	LinkedHashMap<Integer,Table> subRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
@@ -45,8 +63,10 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> esrbColorMap = new LinkedHashMap<String,Integer>();
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
+	LinkedHashMap<String,Boolean> isNameClicked = new LinkedHashMap<String,Boolean>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
+
 	
 	int UiColor = color(94,31,47);
 	int color = 0;
@@ -54,10 +74,22 @@ public class Drawing extends PApplet {
 	final int yBase = -110;
 	boolean iswhenChangeClicked = false;
 	boolean isGenreChangeClicked = false;
-	boolean isEsrbChangeClicked = false;
+	boolean isEsrbChangeClicked = false;	boolean isRedraw = false;
 	
+	String overedName = new String();
+	String overedplatform = new String();
 	public void setup() {
 		size(1920,960);
+		
+		String overedName = new String();
+		String overedplatform = new String();
+		int backColor = 0;
+
+		d = height/rectNum; // 사각형간의 차이
+		dif = 0;
+		
+		nrby = height;
+		nrbx = width;
 		
 		table = loadTable("../all.csv","header");
 		Table genrecolor = loadTable("../genrecolor.csv","header");
@@ -67,16 +99,17 @@ public class Drawing extends PApplet {
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
+		println("row: "+table.getRowCount());
+		
 		// Table 을 30개씩 쪼개기 위함
-		for (int week = 1 ; week < weekNum ; week++) {
-			int end = rectNum * week - 1;
-
+		for (int week = 0 ; week < weekNum ; week++) {
+			int end = rectNum+week*rectNum ;
 			Table subTable = new Table();
 			
 			for (int col = 0 ; col < table.getColumnCount() ; col++)
 				subTable.addColumn(table.getColumnTitle(col));
-			
-			for (int start = rectNum*(week-1); start < end ; start++) {
+				
+			for (int start = rectNum * week; start < end ; start++) {
 				TableRow row = table.getRow(start);
 				
 				subTable.addRow(row);
@@ -97,31 +130,44 @@ public class Drawing extends PApplet {
 			
 			namePos.put(name, positions);
 			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			isNameClicked.put(name, false);
 		}
 		
 		int idx = 0;
-		
 		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
+
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
 			//records.getValue().sort("platform");
 			//records.getValue().sort("genre");
 			
 			//records.getValue().sort("when");
+
 			/*
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
 			*/
+
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 			}
 			
 			idx++;
 		}
-		
+
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
 
+
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+
+			
+			int R = rgb.getInt("r");
+			int G = rgb.getInt("g");
+			int B = rgb.getInt("b");
+			int A = rgb.getInt("a");
+			
+			genreColorMap.put(genre, color(R,G,B,A));
+
 		}
 		for (String platform : platformSet)
 			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
@@ -136,51 +182,142 @@ public class Drawing extends PApplet {
 			esrbColorMap.put(esrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b")));
 		}
 		
-		worldCamera = new Camera(xBase,yBase,zoom); 
+		worldCamera = new Camera(xBase,yBase,zoom1);
+
 	}
 	
 	public void draw() {
 		noStroke();
+
 		background(235,235,235);
 		String when = "";
 		String name = "";
 		String genre = "";
 		String esrb = "";
+		String platform= "";
 
 		int dx = 0;
 		int dy = 0;
 	
+		Table sub = new Table();
+		
+		// camera에 적용받지 않는 도형을 그리기 위해
 		if (keyPressed) {
+			 if (key == 'w') dy += 50; 
+			 if (key == 's') dy -= 50; 
+		     if (key == 'a') dx+= 50; 
+		     if (key == 'd') dx -= 50;
+		 
 			if( key == 'o'){
-				zoom *= 1.1;
-				key = '1';
+				zoom1 *= 1.1;
+				key = 'h';
 			}
 			if(key == 'p'){
-				zoom *= 0.9;
-				key = '2';
+				zoom1 *= 0.9;
+				key = 'h';
 			}
-			// 카메라가 변해도 UI 가 변하게 하지 않기 위해서
-			if (key == 'w') dy += 50; 
-			if (key == 's') dy -= 50; 
-		    if (key == 'a') dx += 50; 
-		    if (key == 'd') dx -= 50;
+			if(key == '1'){
+				temp1 += 0.1;
+				key = 'h';
+			}
+			if(key == '2'){
+				temp2 += 0.1;
+				key = 'h';
+			}
+			if(key == '3'){
+				temp3 += 0.1;
+				key = 'h';
+			}
+			if(key == '4'){
+				temp4 += 0.1;
+				key = 'h';
+			}
+			if(key == '5'){
+				temp5 += 0.1;
+				key = 'h';
+			}
+			if(key == '6'){
+				temp6 += 0.1;
+				key = 'h';
+			}
+			if(key == '7'){
+				temp7 += 0.1;
+				key = 'h';
+			}
+			if(key == '8'){
+				temp8 += 0.1;
+				key = 'h';
+			}
+			if(key == '9'){
+				temp9 += 0.1;
+				key = 'h';
+			}
 		}
-		
-		translate(-worldCamera.pos.x, -worldCamera.pos.y);
+		/*
+		println(temp1 + "temp1");
+		println(temp2 + "temp2");
+		println(temp3 + "temp3");
+		println(temp4 + "temp4");
+		println(temp5 + "temp5");
+		println(temp6 + "temp6");
+		println(temp7 + "temp7");
+		println(temp8 + "temp8");
+		println(temp9 + "temp9");
+
+		*/
+		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
-		scale(zoom);
+		scale(zoom1);
+		
+		int idx = 0;
 		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
-			int wn = each.getKey();
+			int wn = each.getKey(); // get index
+			dif = 0;
 			
-			Table sub = each.getValue();
+			sub = each.getValue();
+			int tempWeek = 0;
+			int nextrY = 0;
+			int nextWeek = 0;
+			float temprY = 800;
+			int nextPos = 0;
+			
+			Table before = subRecords.get(wn+1);
+			
+			/*
+			if(isRedraw) {
+				for (int i = 0 ; i < each.getValue().getRowCount() ; i++)
+					each.getValue().getRow(i).setInt("pos", i);
+				
 
+				for (TableRow row : each.getValue().rows()) {
+					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				}
+				
+				idx++;
+				
+			}
+			*/
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
+				
 				when = row.getString("whenyear");
 				name = row.getString("name");
 				genre = row.getString("genre");
 				esrb = row.getString("esrb");
+				platform = row.getString("platform");
+				int week = row.getInt("week");
+				
+				if(wn+1 <408)
+					nextPos = namePos.get(name)[wn+1];
+				else 
+					nextPos = -1;
+				
+				if (nextPos==-1) {
+					nextWeek = 0;
+				}
+				else
+					nextWeek = before.getInt(nextPos-1, "week");
 				
 				if(iswhenChangeClicked)
 					color = whenYearColorMap.get(when);
@@ -191,27 +328,126 @@ public class Drawing extends PApplet {
 				else
 					color = genreColorMap.get(genre);
 			
-			
-				int nextPos = namePos.get(name)[wn];
-
-				int rX = rbx+(wn-1)*(wInterval*w-1);
+				int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
 				int rY = rbx+pos*(w+d);
 				
+				//fill(color);
+				//rect(rX,rY,w,w);
+				
+				
+				int id = row.getInt("id");
+
+				
+				float nrY = 0;
+				float nNrY = 0;
+
+				if(week<30000){
+					nrY = 800 - week/300*temp1; 
+				}else if(week<40000){
+					nrY = 700 - week/400*temp2;
+				}else if(week<50000){
+					nrY = 600 - week/500*temp3;
+				}else if(week<60000){
+					nrY = 500 - week/600*temp4;
+				}else if(week<80000){
+					nrY = 400 - week/800*temp5;
+				}else if(week<100000){
+					nrY = 300 - week/1000*temp6;
+				}else if(week<150000){
+					nrY = 200 - week/1500*temp7;
+				}else if(week<250000){
+					nrY = 100 - week/2500*temp8;
+				}else if(week<400000){
+					nrY = 100 - week/4000*temp8;
+				}else{
+					nrY = -week/10000*temp9;
+				}
+
+				if (Math.abs(temprY-rY)<h){
+					nrY = temprY - h;
+				}
+
+				if(nextWeek<30000){
+					nNrY = 800 - nextWeek/300*temp1; 
+				}else if(nextWeek<40000){
+					nNrY = 700 - nextWeek/400*temp2;
+				}else if(nextWeek<50000){
+					nNrY = 600 - nextWeek/500*temp3;
+				}else if(nextWeek<60000){
+					nNrY = 500 - nextWeek/600*temp4;
+				}else if(nextWeek<80000){
+					nNrY = 400 - nextWeek/800*temp5;
+				}else if(nextWeek<100000){
+					nNrY = 300 - nextWeek/1000*temp6;
+				}else if(nextWeek<150000){
+					nNrY = 200 - nextWeek/1500*temp7;
+				}else if(nextWeek<250000){
+					nNrY = 100 - nextWeek/2500*temp8;
+				}else if(nextWeek<400000){
+					nNrY = 100 - nextWeek/4000*temp8;
+				}else{
+					nNrY = -nextWeek/10000*temp9;
+				}
+
+				if (Math.abs(temprY-rY)<h){
+					nrY = temprY - h;
+				}
+				nrY += 200;
+				nNrY += 200;
+				
+				int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1050);
+				tempWeek = week;
+				temprY = nrY;
+				
 				noStroke();
-				fill(color);
-				rect(rX,rY,w,w);
+		
+				Rectangle cur = new Rectangle(nrX,(int) nrY, w,h);
+				
+				
+				
+				if (cur.contains((mouseX+worldCamera.pos.x)/zoom1, (mouseY+worldCamera.pos.y)/zoom1)) {
+					//마우스를 댄 그 사각형
+					fill(0);
+					stroke(0);
+					
+					overedName = name;
+					overedplatform = platform;
+					textSize(50);
+					fill(0);
+					
+					text(name,(mouseX+worldCamera.pos.x)/zoom1,(mouseY+worldCamera.pos.y)/zoom1);
+				}
+				else {
+					if (overedName.equals(name) && overedplatform.equals(platform)) {
+						//같은 이름
+						fill(0);
+						stroke(0);
+					}	
+					else {
+						// 아예 아님
+						fill(color);
+						stroke(color);
+					}
+				}
+				
+				
+				
 				if (nextPos != -1) {
 					strokeWeight(5);
-					stroke(color);
-				
-					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
+					//stroke(color);
+					line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
 				}
+				noStroke();
+				rect(nrX,nrY,w,h);
+				
+				 
 			}
 		}
 		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
-		scale(1/zoom);
+		
+		scale(1/zoom1);
 			fill(UiColor);
 				//위 사각형
 				float upperRectX = worldCamera.pos.x+dx;
@@ -292,7 +528,9 @@ public class Drawing extends PApplet {
 			fill(255);
 				textSize(50);
 				text("GAME OF THORNES",worldCamera.pos.x+dx+110,worldCamera.pos.y+dy+65);
-	}
+				text(zoom1,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+
+		}
 	
 	class Camera { 
 		  PVector pos; //Camera's position  
@@ -337,12 +575,18 @@ public class Drawing extends PApplet {
 		      if(key == 'e'){
 		    	  pos.x = basicX;
 		    	  pos.y = basicY;
-		    	  zoom = basicZoom;
+		    	  zoom1 = basicZoom;
 		      }
 		    } 
-		  }
-	}  
 
-}
+		  }
+		}  
+			
+	}
+	
+	
+	
+
+
 
 
