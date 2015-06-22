@@ -10,6 +10,8 @@ import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
+import processing.core.PFont;
+import processing.core.PImage;
 import processing.core.PVector;
 import processing.data.Table;
 import processing.data.TableRow;
@@ -17,7 +19,8 @@ import processing.data.TableRow;
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
 	Table table;
-
+	PFont DIN,GOT;
+	PImage CROWN;
 	final int w = 50; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -40,6 +43,7 @@ public class Drawing extends PApplet {
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
 	Set<String> whenYearSet = new LinkedHashSet<String>();
+	Set<String> publisherSet = new LinkedHashSet<String>();
 
 	Set<String> esrbSet = new LinkedHashSet<String>();
 
@@ -61,6 +65,7 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> genreColorMap = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> publisherColorMap = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> esrbColorMap = new LinkedHashMap<String,Integer>();
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	LinkedHashMap<String,Boolean> isNameClicked = new LinkedHashMap<String,Boolean>();
@@ -75,12 +80,16 @@ public class Drawing extends PApplet {
 	boolean iswhenChangeClicked = false;
 	boolean isGenreChangeClicked = false;
 	boolean isEsrbChangeClicked = false;	boolean isRedraw = false;
+	boolean isPlatformChangeClicked = false; boolean isPublisherChangedClicked = false;
 	
 	String overedName = new String();
 	String overedplatform = new String();
 	public void setup() {
 		size(1920,960);
 		
+		DIN = createFont("DIN-MEDIUM",14);
+		GOT = createFont("GAME OF THRONES",14);
+		CROWN = loadImage("../crown.png");
 		String overedName = new String();
 		String overedplatform = new String();
 		int backColor = 0;
@@ -95,7 +104,8 @@ public class Drawing extends PApplet {
 		Table genrecolor = loadTable("../genrecolor.csv","header");
 		Table yearcolor = loadTable("../yearcolor.csv","header");
 		Table esrbColor = loadTable("../esrb.csv","header");
-	
+		Table publisherColor = loadTable("../publishercolor.csv","header");
+		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
@@ -119,6 +129,7 @@ public class Drawing extends PApplet {
 				platformSet.add(row.getString("platform"));
 				whenYearSet.add(row.getString("whenyear"));
 				esrbSet.add(row.getString("esrb"));
+				publisherSet.add(row.getString("publisher"));
 			}
 			subRecords.put(week,subTable);
 		}
@@ -137,7 +148,7 @@ public class Drawing extends PApplet {
 		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
 
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
-			//records.getValue().sort("platform");
+			records.getValue().sort("platform");
 			//records.getValue().sort("genre");
 			
 			//records.getValue().sort("when");
@@ -156,11 +167,8 @@ public class Drawing extends PApplet {
 
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
-
-
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 
-			
 			int R = rgb.getInt("r");
 			int G = rgb.getInt("g");
 			int B = rgb.getInt("b");
@@ -179,7 +187,16 @@ public class Drawing extends PApplet {
 		
 		for (String esrb : esrbSet) {
 			TableRow rgb = esrbColor.findRow(esrb, "esrb");
-			esrbColorMap.put(esrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b")));
+			esrbColorMap.put(esrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+		}
+		
+		for (String publisher : publisherSet) {
+			/*
+			TableRow rgb = publisherColor.findRow(publisher, "publisher");
+			publisherColorMap.put(publisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			
+			*/
+			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
 		worldCamera = new Camera(xBase,yBase,zoom1);
@@ -195,6 +212,7 @@ public class Drawing extends PApplet {
 		String genre = "";
 		String esrb = "";
 		String platform= "";
+		String publisher ="";
 
 		int dx = 0;
 		int dy = 0;
@@ -306,6 +324,7 @@ public class Drawing extends PApplet {
 				genre = row.getString("genre");
 				esrb = row.getString("esrb");
 				platform = row.getString("platform");
+				publisher = row.getString("publisher");
 				int week = row.getInt("week");
 				
 				if(wn+1 <408)
@@ -325,6 +344,9 @@ public class Drawing extends PApplet {
 					color = esrbColorMap.get(esrb);
 				else if (isGenreChangeClicked)
 					color = genreColorMap.get(genre);
+				else if (isPlatformChangeClicked) {
+					color = publisherColorMap.get(publisher);
+				}
 				else
 					color = genreColorMap.get(genre);
 			
@@ -403,8 +425,6 @@ public class Drawing extends PApplet {
 		
 				Rectangle cur = new Rectangle(nrX,(int) nrY, w,h);
 				
-				
-				
 				if (cur.contains((mouseX+worldCamera.pos.x)/zoom1, (mouseY+worldCamera.pos.y)/zoom1)) {
 					//마우스를 댄 그 사각형
 					fill(0);
@@ -429,8 +449,6 @@ public class Drawing extends PApplet {
 						stroke(color);
 					}
 				}
-				
-				
 				
 				if (nextPos != -1) {
 					strokeWeight(5);
@@ -457,78 +475,165 @@ public class Drawing extends PApplet {
     			// 아래 사각형
     			float downRectX = worldCamera.pos.x+dx;
 				float downRectY = worldCamera.pos.y+dy+height-100;
+				
     			rect(downRectX,downRectY,width,100);
+       			stroke(58,27,35);
+       			strokeWeight(2);
+    			line(downRectX+130,downRectY+15,downRectX+130,downRectY+85);
+    			image(CROWN ,downRectX+15, downRectY+15);
     			
     			//genreChange click
-    			Rectangle genreChange = new Rectangle((int) downRectX+50,(int) downRectY+25,100,50);
+    			int genreX = 150;
+    			int buttonD = 150;
+    			Rectangle genreChange = new Rectangle((int) downRectX+genreX,(int) downRectY+25,w,w);
     			
-    			genreChange.x-=worldCamera.pos.x;
-    			genreChange.y-=worldCamera.pos.y;
+    			genreChange.x-=worldCamera.pos.x+dx;
+    			genreChange.y-=worldCamera.pos.y+dy;
     			
     			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				
+    				fill(240,81,57);
     				iswhenChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    				isPublisherChangedClicked = false;
     				isEsrbChangeClicked = false;
     				isGenreChangeClicked = true;
     			}
     			else {
-    				fill(0,255,0);
+    				if (isGenreChangeClicked)
+    					fill(240,81,57);
+    				else
+    					fill(119,50,57);
     				
     			}
-    			rect(downRectX+50,downRectY+25,100,50);
+    			noStroke();
+    			rect(downRectX+genreX+55,downRectY+25,w,w);
+    			
     			//genreChange
     			textSize(25);
-    			fill(0);
-    			text("genre",downRectX+50,downRectY+50);
+    			fill(255);
+    			text("genre",downRectX+genreX+w+70*1.2f,downRectY+w+5);
     			
-    			//whenChange click
-    			Rectangle whenChange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
+    			//platformChange click
+    			int platformX = genreX + buttonD;
+    			Rectangle platformChange = new Rectangle((int) downRectX+platformX,(int) downRectY+25,w,w);
     			
-    			whenChange.x-=worldCamera.pos.x;
-    			whenChange.y-=worldCamera.pos.y;
+    			platformChange.x-=worldCamera.pos.x+dx;
+    			platformChange.y-=worldCamera.pos.y+dy;
     			
-    			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				isGenreChangeClicked = false;
-    				isEsrbChangeClicked = false;
-    				iswhenChangeClicked = true;
-    			}
-    			else {
-    				fill(0,255,0);
-    			}
-    			rect(downRectX+200,downRectY+25,100,50);
-    			//whenChange
-    			textSize(25);
-    			fill(0);
-    			text("When",downRectX+200,downRectY+50);
-    			
-    			//esrbChange click
-    			Rectangle esrbChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
-    			esrbChange.x-=worldCamera.pos.x;
-    			esrbChange.y-=worldCamera.pos.y;
-    			
-    			//esrbChange
-    			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
+    			if (mousePressed && platformChange.contains(mouseX, mouseY)) {
+    				fill(240,81,57);
     				iswhenChangeClicked = false;
     				isGenreChangeClicked = false;
+    				isPublisherChangedClicked = false;
+    				isEsrbChangeClicked = false;
+    				isPlatformChangeClicked = true;
+    			}
+    			else {
+    				if (isPlatformChangeClicked)
+    					fill(240,81,57);
+    				else
+    					fill(119,50,57);
+    				
+    			}
+    			noStroke();
+    			rect(downRectX+platformX+130,downRectY+25,w,w);
+    			//platformChange
+    			textSize(25);
+    			fill(255);
+    			text("platform",downRectX+platformX+w+120*1.2f,downRectY+55);
+    			
+    			//esrbChange click
+    			int esrbX = platformX + buttonD;
+    			
+    			Rectangle esrbChange = new Rectangle((int) downRectX+esrbX,(int) downRectY+25,w,w);
+    			esrbChange.x-=worldCamera.pos.x+dx;
+    			esrbChange.y-=worldCamera.pos.y+dy;
+    			
+    		
+    			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
+    				fill(240,81,57);
+    				iswhenChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isPublisherChangedClicked = false;
+    				isPlatformChangeClicked = false;
     				isEsrbChangeClicked = true;
     			}
     			else {
-    				fill(0,255,0);
+    				if (isEsrbChangeClicked)
+    					fill(240,81,57);
+    				else
+    					fill(119,50,57);
     			}
     			
-    			rect(downRectX+500,downRectY+25,100,50);
+    			//esrbChange 
+    			noStroke();
+    			rect(downRectX+esrbX+220,downRectY+25,w,w);
     			textSize(25);
-    			fill(0);
-    			text("esrb",downRectX+500,downRectY+50);
+    			fill(255);
+    			text("esrb",downRectX+esrbX+w+190*1.2f,downRectY+w+5);
+    			
+    			//publisherChange
+    			
+    			int publisherX = esrbX + buttonD;
+    			Rectangle publisherChange = new Rectangle((int) downRectX+publisherX,(int) downRectY+25,w,w);
+    			publisherChange.x-=worldCamera.pos.x+dx;
+    			publisherChange.y-=worldCamera.pos.y+dy;
+    			
+    			
+    			if (mousePressed && publisherChange.contains(mouseX, mouseY)) {
+    				fill(240,81,57);
+    				iswhenChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    			 	isEsrbChangeClicked = false;
+    				isPublisherChangedClicked = true;
+    			}
+    			else {
+    				if (isPublisherChangedClicked)
+    					fill(240,81,57);
+    				else
+    					fill(119,50,57);
+    			}
+    			//publisher draw
+    			int releaseX = publisherX +buttonD;
+    			rect(downRectX+publisherX+270,downRectY+25,w,w);
+    			textSize(25);
+    			fill(255);
+    			text("Publisher",downRectX+publisherX+w+230*1.2f,downRectY+55);
+    			
+    			//whenChange click
+    			Rectangle releaseChange = new Rectangle((int) downRectX+releaseX,(int) downRectY+25,w,w);
+    			
+    			releaseChange.x-=worldCamera.pos.x+dx;
+    			releaseChange.y-=worldCamera.pos.y+dy;
+    			
+    			if (mousePressed && releaseChange.contains(mouseX, mouseY)) {
+    				fill(240,81,57);
+    				isGenreChangeClicked = false;
+    				isPlatformChangeClicked = false;
+    			 	isEsrbChangeClicked = false;
+    				isPublisherChangedClicked = false;
+    				iswhenChangeClicked = true;
+    			}
+    			else {
+    				if (iswhenChangeClicked)
+    					fill(240,81,57);
+    				else
+    					fill(119,50,57);
+    			}
+    			noStroke();
+    			rect(downRectX+releaseX+370,downRectY+25,w,w);
+    			//whenChange
+    			textSize(25);
+    			fill(255);
+    			text("Release",downRectX+releaseX+w+310*1.2f,downRectY+w+5);
     			
     			
 			fill(255);
-				textSize(50);
+				textFont(GOT,50);
 				text("GAME OF THORNES",worldCamera.pos.x+dx+110,worldCamera.pos.y+dy+65);
-				text(zoom1,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+				textFont(DIN,20);
+				text(overedName,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
 	
