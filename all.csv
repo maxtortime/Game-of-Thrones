@@ -1239,7 +1239,7 @@ id,pos,name,platform,publisher,genre,week,total,time,date,esrb,dateint,whenint,w
 1238,8, Brain Age 2: More Training in Minutes a Day ( DS ), DS , Nintendo , Misc ,78994,6080132,95,2007-10-20,E,39375,38710,2005-12-24,2005
 1239,9, Forza Motorsport 2 ( X360 ), X360 , Microsoft Game Studios , Racing ,77503,1055078,22,2007-10-20,E,39375,39221,2007-05-19,2007
 1240,10, PGR4 - Project Gotham Racing 4 ( X360 ), X360 , Microsoft Game Studios , Racing ,70318,227640,3,2007-10-20,E,39375,39354,2007-09-29,2007
-1241,11, MySims ( DS ), DS , Electronic Arts , Simulation ,63106,392793,5,2007-10-20,E,39375,39340,2007-09-15,2007
+1241,11,o, DS , Electronic Arts , Simulation ,63106,392793,5,2007-10-20,E,39375,39340,2007-09-15,2007
 1242,12, FIFA Soccer 08 ( PS3 ), PS3 , Electronic Arts , Sports ,61983,360209,4,2007-10-20,E,39375,39347,2007-09-22,2007
 1243,13, Marvel: Ultimate Alliance ( X360 ), X360 , Activision , Role-Playing ,61218,485567,52,2007-10-20,T,39375,39011,2006-10-21,2006
 1244,14, MotorStorm ( PS3 ), PS3 , Sony Computer Entertainment , Racing ,60636,1492152,45,2007-10-20,T,39375,39060,2006-12-09,2006
@@ -1256,7 +1256,7 @@ id,pos,name,platform,publisher,genre,week,total,time,date,esrb,dateint,whenint,w
 1255,25, Final Fantasy Tactics: The War of the Lions ( PSP ), PSP , Square Enix , Role-Playing ,37821,450736,24,2007-10-20,T,39375,39207,2007-05-05,2007
 1256,26, DS Bungaku Zenshuu ( DS ), DS , Nintendo , Misc ,36813,36813,1,2007-10-20,E10+,39375,39368,2007-10-13,2007
 1257,27, Cooking Mama ( DS ), DS , 505 Games , Simulation ,35578,1278879,83,2007-10-20,E,39375,38794,2006-03-18,2006
-1258,28, Pokemon Diamond/Pokemon Pearl ( DS ), DS , Nintendo , Role-Playing ,33347,1008999,6,2007-10-20,T,39375,39333,2007-09-08,2007
+1258,28, Pokemon Mystery Dungeon: Explorers of Time/Explorers of Darkness( DS ), DS , Nintendo , Role-Playing ,33347,1008999,6,2007-10-20,T,39375,39333,2007-09-08,2007
 1259,29, MySims ( Wii ), Wii , Electronic Arts , Simulation ,33129,272549,5,2007-10-20,E,39375,39340,2007-09-15,2007
 1260,30, Flash Focus: Vision Training in Minutes a Day ( DS ), DS , Nintendo , Misc ,32955,677820,21,2007-10-20,E,39375,39228,2007-05-26,2007
 1261,1, Wii Sports ( Wii ), Wii , Nintendo , Sports ,305341,11877667,49,2007-10-27,E,39382,39039,2006-11-18,2006

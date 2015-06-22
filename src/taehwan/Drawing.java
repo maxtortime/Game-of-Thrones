@@ -102,6 +102,7 @@ public class Drawing extends PApplet {
 	String overedplatform = new String();
 	String overedgenre = new String();
 	String overedesrb = new String();
+	String overedpublisher = new String();
 	int overedWhen = 0;
 	
 	public void setup() {
@@ -295,19 +296,22 @@ public class Drawing extends PApplet {
 		for (Entry<Integer, Table> each : forRecordStack.peek().entrySet()) {
 			wn = each.getKey(); // get index
 			
-			
-			if(wn % 51 == 0 && wn!=0) {
+			println(wn);
+			if(wn % 51 == 0 || wn == 407) {
 				//rect(rbx+wn*(wInterval*w-1),0,width,height);
 				strokeWeight(30);
 				stroke(150,150,150,70);
-				line(rbx+wn*(wInterval*w-1),-50000,rbx+wn*(wInterval*w-1),50000);
+				line(rbx+(wn-1)*(wInterval*w-1)+15,-50000,rbx+(wn-1)*(wInterval*w-1)+15,50000);
 
-				textSize(200);
-				fill(15);
-				text(year,rbx+wn*(wInterval*w-1)-510,3000);
+				textSize(500);
+				fill(147);
+				text(year,rbx+wn*(wInterval*w-1)+1500,0);
 				year++;
 				
 			}
+			
+			
+			
 			
 			dif = 0;
 			sub = each.getValue();
@@ -428,10 +432,13 @@ public class Drawing extends PApplet {
 						overedWeek = week;	
 						overedgenre = genre;
 						overedesrb = esrb;
+						overedpublisher = publisher;
 								
 						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
 						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
 						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
+						TableRow rgb4 = platformColor.findRow((platform), "platform");
+						TableRow rgb5 = publisherColor.findRow((publisher), "publisher");
 					
 						if (whenYearColorMap.get(overedWhen)==color){
 							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
@@ -445,6 +452,14 @@ public class Drawing extends PApplet {
 							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
 							color = genreColorMap.get(overedgenre);						
 							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
+						}else if(platformColorMap.get(overedplatform)==color){
+							platformColorMap.put(overedplatform, color(rgb4.getInt("r"),rgb4.getInt("g"),rgb4.getInt("b"),255));
+							color = platformColorMap.get(overedplatform);						
+							platformColorMap.put(overedplatform,color(rgb4.getInt("r"),rgb4.getInt("g"),rgb4.getInt("b"),rgb4.getInt("a")));
+						}else if(publisherColorMap.get(overedpublisher)==color){
+							publisherColorMap.put(overedpublisher, color(rgb5.getInt("r"),rgb5.getInt("g"),rgb5.getInt("b"),255));
+							color = publisherColorMap.get(overedpublisher);						
+							publisherColorMap.put(overedpublisher,color(rgb5.getInt("r"),rgb5.getInt("g"),rgb5.getInt("b"),rgb5.getInt("a")));
 						}		
 						
 					}
@@ -476,6 +491,24 @@ public class Drawing extends PApplet {
 								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
 							}							
 						}
+						if (overedName.equals(name) && overedplatform.equals(platform)){
+							//같은 이름
+							TableRow rgb = platformColor.findRow((platform), "platform");
+							if (platformColorMap.get(overedplatform)==color) {
+								platformColorMap.put(overedplatform, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = platformColorMap.get(overedplatform);
+								platformColorMap.put(overedplatform,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedpublisher.equals(publisher)){
+							//같은 이름
+							TableRow rgb = publisherColor.findRow((publisher), "publisher");
+							if (publisherColorMap.get(overedpublisher)==color) {
+								publisherColorMap.put(overedpublisher, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = publisherColorMap.get(overedpublisher);
+								publisherColorMap.put(overedpublisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
 					}
 					
 					if (nextPos != -1) {
@@ -497,6 +530,8 @@ public class Drawing extends PApplet {
 					int rY = rbx+pos*(w+d);
 					cur = new Rectangle(rX, rY, w,w);
 
+					
+					
 					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 						//마우스를 댄 그 사각형
 						overedName = name;
@@ -505,10 +540,13 @@ public class Drawing extends PApplet {
 						overedWeek = week;	
 						overedgenre = genre;
 						overedesrb = esrb;
+						overedpublisher = publisher;
 								
 						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
 						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
 						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
+						TableRow rgb4 = platformColor.findRow((platform), "platform");
+						TableRow rgb5 = publisherColor.findRow((publisher), "publisher");
 					
 						if (whenYearColorMap.get(overedWhen)==color){
 							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
@@ -522,6 +560,14 @@ public class Drawing extends PApplet {
 							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
 							color = genreColorMap.get(overedgenre);						
 							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
+						}else if(platformColorMap.get(overedplatform)==color){
+							platformColorMap.put(overedplatform, color(rgb4.getInt("r"),rgb4.getInt("g"),rgb4.getInt("b"),255));
+							color = platformColorMap.get(overedplatform);						
+							platformColorMap.put(overedplatform,color(rgb4.getInt("r"),rgb4.getInt("g"),rgb4.getInt("b"),rgb4.getInt("a")));
+						}else if(publisherColorMap.get(overedpublisher)==color){
+							publisherColorMap.put(overedpublisher, color(rgb5.getInt("r"),rgb5.getInt("g"),rgb5.getInt("b"),255));
+							color = publisherColorMap.get(overedpublisher);						
+							publisherColorMap.put(overedpublisher,color(rgb5.getInt("r"),rgb5.getInt("g"),rgb5.getInt("b"),rgb5.getInt("a")));
 						}		
 						
 					}
@@ -551,6 +597,24 @@ public class Drawing extends PApplet {
 								genreColorMap.put(overedgenre, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
 								color = genreColorMap.get(overedgenre);
 								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+						if (overedName.equals(name) && overedplatform.equals(platform)){
+							//같은 이름
+							TableRow rgb = platformColor.findRow((platform), "platform");
+							if (platformColorMap.get(overedplatform)==color) {
+								platformColorMap.put(overedplatform, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = platformColorMap.get(overedplatform);
+								platformColorMap.put(overedplatform,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedpublisher.equals(publisher)){
+							//같은 이름
+							TableRow rgb = publisherColor.findRow((publisher), "publisher");
+							if (publisherColorMap.get(overedpublisher)==color) {
+								publisherColorMap.put(overedpublisher, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = publisherColorMap.get(overedpublisher);
+								publisherColorMap.put(overedpublisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
 							}							
 						}
 					}
@@ -770,11 +834,11 @@ public class Drawing extends PApplet {
     			if(isSales)
     				image(salesIcon,downRectX+1407,downRectY+17);
     				
-    			/*
+
 			fill(255);
 			textSize(50);
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
-*/
+
 		}
 	
 	void changeRecord(String type) {
