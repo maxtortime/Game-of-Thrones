@@ -24,7 +24,7 @@ public class Drawing extends PApplet {
 	Table publisherColor;
 	Table esrbColor;
 	PFont DIN,GOT;
-	PImage CROWN,Footer;
+	PImage CROWN,Footer,Header;
 	final int w = 30; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -97,12 +97,13 @@ public class Drawing extends PApplet {
 	int overedWhen = 0;
 	
 	public void setup() {
-		size(1920,960);
+		size(1920,1080);
 		
 		DIN = createFont("DIN-MEDIUM",14);
 		GOT = createFont("GAME OF THRONES",14);
 		CROWN = loadImage("../crown.png");
 		Footer = loadImage("../Footer.png");
+		Header =  loadImage("../Header.png");
 		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
@@ -289,6 +290,8 @@ public class Drawing extends PApplet {
 		worldCamera.draw();
 		scale(zoom2);
 		
+		int idx = 0;
+		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
 			int wn = each.getKey(); // get index
 			dif = 0;
@@ -297,61 +300,39 @@ public class Drawing extends PApplet {
 			if (isStacked) {
 				if(iswhenChangeClicked) {
 					sub.sort("whenyear");
-					println("whenyear...............");
-					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
-					}
 				}
 				else if (isEsrbChangeClicked) {
 					sub.sort("esrb");
-					println("esrb...............");
-					for (TableRow r : sub.rows()) {
-						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
-					}
 				}
 				else if (isGenreChangeClicked) {
 					sub.sort("genre");
-					println("genre...............");
-					for (TableRow r : sub.rows()) {
-						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
-					}
 				}
 				else if (isPlatformChangeClicked) {
 					sub.sort("platform");
-					println("platform...............");
-					for (TableRow r : sub.rows()) {
-						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
-					}
 				}
 				else if (isPublisherChangedClicked) {
 					sub.sort("publisher");
-					println("publisher...............");
-					for (TableRow r : sub.rows()) {
-						println(r.getString("name"),r.getString("pos"));
-					}
 				}
 				else {
-					println("id2...............");
-					//sub.sort("id");
-					for (TableRow r : sub.rows()) {
-						println(r.getInt("id"),r.getString("name"),r.getString("pos"));
-					}
+					sub.sort("id");
 				}
 				
 				
-				for (int i = 0 ; i < sub.getRowCount() ; i++) {
+				for (int i = 0 ; i < sub.getRowCount() ; i++)
 					sub.getRow(i).setInt("pos", i+1);
 				
-					namePos.get(sub.getRow(i).getString("name"))[i] = sub.getRow(i).getInt("pos");
+
+				for (TableRow row : sub.rows()) {
+					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+					
 				}
+				
+				idx++;
 				
 			}
 			else {
-				println("id3..........");
-				//sub.sort("id");
-				for (TableRow r : sub.rows()) {
-					println(r.getInt("id"),r.getString("name"),r.getString("pos"));
-				}
+				idx++;
+				
 			}
 			
 		
@@ -568,8 +549,8 @@ public class Drawing extends PApplet {
 				//위 사각형
 				float upperRectX = worldCamera.pos.x+dx;
 				float upperRectY = worldCamera.pos.y+dy;
-				
-    			rect(upperRectX,upperRectY,width,100);
+				image(Header,upperRectX,upperRectY);
+    			//rect(upperRectX,upperRectY,width,100);
     			// 아래쪽
     			float footerX = worldCamera.pos.x+dx;
     			float footerY = worldCamera.pos.y+dy+height-204;
@@ -577,11 +558,11 @@ public class Drawing extends PApplet {
     			
     			//float downRectX = worldCamera.pos.x+dx;
 				//float downRectY = worldCamera.pos.y+dy+height-100;
-    			float downRectX = footerX;
-    			float downRectY = footerY;
+    			float downRectX = footerX+230;
+    			float downRectY = footerY+60;
     			
     			//genreChange click
-    			Rectangle genreChange = new Rectangle((int) downRectX+50,(int) downRectY+25,100,50);
+    			Rectangle genreChange = new Rectangle((int) downRectX+47,(int) downRectY+25+50,100,50);
     			
     			genreChange.x-=worldCamera.pos.x;
     			genreChange.y-=worldCamera.pos.y;
@@ -600,14 +581,14 @@ public class Drawing extends PApplet {
     				fill(0,255,0);
     				
     			}
-    			rect(downRectX+50,downRectY+25,100,50);
+    			rect(downRectX+47,downRectY+25,45.709f,45.833f);
     			//genreChange
     			textSize(25);
     			fill(0);
-    			text("genre",downRectX+50,downRectY+50);
+    			text("genre",downRectX+47,downRectY+50);
     			
     			//plaform click
-    			Rectangle plaformhange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
+    			Rectangle plaformhange = new Rectangle((int) downRectX+240,(int) downRectY+25,100,50);
     			
     			plaformhange.x-=worldCamera.pos.x;
     			plaformhange.y-=worldCamera.pos.y;
@@ -625,7 +606,7 @@ public class Drawing extends PApplet {
     				fill(0,255,0);
     				
     			}
-    			rect(downRectX+200,downRectY+25,100,50);
+    			rect(downRectX+240,downRectY+25,45.709f,45.833f);
     			
     			//plaform draw
     			textSize(25);
@@ -633,7 +614,7 @@ public class Drawing extends PApplet {
     			text("Platform",downRectX+200,downRectY+50);
     			
     			//esrbChange click
-    			Rectangle esrbChange = new Rectangle((int) downRectX+350,(int) downRectY+25,100,50);
+    			Rectangle esrbChange = new Rectangle((int) downRectX+478,(int) downRectY+25,100,50);
     			esrbChange.x-=worldCamera.pos.x;
     			esrbChange.y-=worldCamera.pos.y;
     			
@@ -651,13 +632,13 @@ public class Drawing extends PApplet {
     				fill(0,255,0);
     			}
     			
-    			rect(downRectX+350,downRectY+25,100,50);
+    			rect(downRectX+478,downRectY+25,45.709f,45.833f);
     			textSize(25);
     			fill(0);
-    			text("esrb",downRectX+350,downRectY+50);
+    			text("esrb",downRectX+478,downRectY+50);
     			
     			//publisherChange click
-    			Rectangle publisherChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
+    			Rectangle publisherChange = new Rectangle((int) downRectX+665,(int) downRectY+25,100,50);
     			publisherChange.x-=worldCamera.pos.x;
     			publisherChange.y-=worldCamera.pos.y;
     			
@@ -674,13 +655,13 @@ public class Drawing extends PApplet {
     				fill(0,255,0);
     			}
     			
-    			rect(downRectX+500,downRectY+25,100,50);
+    			rect(downRectX+665,downRectY+25,45.709f,45.833f);
     			textSize(25);
     			fill(0);
-    			text("Publisher",downRectX+500,downRectY+50);
+    			text("Publisher",downRectX+665,downRectY+50);
     			
     			//whenChange click
-    			Rectangle whenChange = new Rectangle((int) downRectX+650,(int) downRectY+25,100,50);
+    			Rectangle whenChange = new Rectangle((int) downRectX+915,(int) downRectY+25,100,50);
     			
     			whenChange.x-=worldCamera.pos.x;
     			whenChange.y-=worldCamera.pos.y;
@@ -698,13 +679,13 @@ public class Drawing extends PApplet {
     			else {
     				fill(0,255,0);
     			}
-    			rect(downRectX+650,downRectY+25,100,50);
+    			rect(downRectX+915,downRectY+25,45.709f,45.833f);
     			//whenChange
     			textSize(25);
     			fill(0);
-    			text("When",downRectX+650,downRectY+50);
-    			
-    			//whenChange click
+    			text("When",downRectX+915,downRectY+50);
+    			/*
+    			//salesChange click
     			Rectangle salesChange = new Rectangle((int) downRectX+800,(int) downRectY+25,100,50);
     			
     			salesChange.x-=worldCamera.pos.x;
@@ -721,8 +702,8 @@ public class Drawing extends PApplet {
     				fill(0,255,0);
     				
     			}
-    			rect(downRectX+800,downRectY+25,100,50);
-    			//whenChange
+    			rect(downRectX+800,downRectY+25,45.709f,45.833f);
+    			//salesChange
     			textSize(25);
     			fill(0);
     			text("Sales",downRectX+800,downRectY+50);
@@ -743,20 +724,17 @@ public class Drawing extends PApplet {
     			}
     			else {
     				fill(0,255,0);
-    				//isStacked =false;
+    				
     			}
     			
-    			rect(downRectX+950,downRectY+25,100,50);
+    			rect(downRectX+950,downRectY+25,45.709f,45.833f);
     			textSize(25);
     			fill(0);
     			text("stack",downRectX+950,downRectY+50);
-    			
+    			*/
     			
 			fill(255);
-				textFont(GOT,50);
-				text("GAME  OF  THORNES",worldCamera.pos.x+dx+90,worldCamera.pos.y+dy+73);
-				textFont(DIN,30);
-				text(overedName+"...year: "+when,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+			text(overedName+"...year: "+when,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
 	
