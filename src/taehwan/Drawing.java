@@ -8,6 +8,7 @@ import java.util.LinkedHashSet;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.Stack;
 
 import processing.core.PApplet;
 import processing.core.PFont;
@@ -23,8 +24,9 @@ public class Drawing extends PApplet {
 	Table yearcolor;
 	Table publisherColor;
 	Table esrbColor;
+	Table platformColor;
 	PFont DIN,GOT;
-	PImage CROWN,Footer,Header,stackIcon;
+	PImage CROWN,Footer,Header,stackIcon,salesIcon;
 	final int w = 30; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -38,8 +40,10 @@ public class Drawing extends PApplet {
 	int nrbx = 0;
 	int nrby = 0;
 	
-	float zoom1 = 0.78f;
-	float zoom2 = 0.226f;
+	float sales = 0.226f;
+	float normal = 0.226f;
+	
+	float zoom = normal;
 	int MAXWEEK,MINWEEK;
 	
 	Camera worldCamera;
@@ -78,6 +82,7 @@ public class Drawing extends PApplet {
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
+	Stack<LinkedHashMap<Integer,Table>> forRecordStack = new Stack<LinkedHashMap<Integer,Table>>();
 	
 	int UiColor = color(94,31,47);
 	int color = 0;
@@ -108,6 +113,7 @@ public class Drawing extends PApplet {
 		Footer = loadImage("../Footer.png");
 		Header =  loadImage("../Header.png");
 		stackIcon = loadImage("../stackicon.png");
+		salesIcon =  loadImage("../salesicon.png");
 		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
@@ -120,6 +126,7 @@ public class Drawing extends PApplet {
 		yearcolor = loadTable("../yearcolor.csv","header");
 		esrbColor = loadTable("../esrb.csv","header");
 		publisherColor = loadTable("../publishercolor.csv","header");
+		platformColor = loadTable("../platformcolor.csv","header");
 		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
@@ -177,12 +184,24 @@ public class Drawing extends PApplet {
 			idx++;
 		}
 		
+		forRecordStack.push(subRecords);
+		
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}
-		for (String platform : platformSet)
-			platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+		for (String platform : platformSet) {
+			//platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			
+			TableRow rgb = platformColor.findRow(platform, "platform");
+			try {
+				platformColorMap.put(platform,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+			} catch (NullPointerException e) {
+				platformColorMap.put(platform,color(192,192,192));
+			}
+			
+		}
+			
 		
 		for (Integer when : whenYearSet) {
 			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
@@ -206,7 +225,7 @@ public class Drawing extends PApplet {
 			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
-		worldCamera = new Camera(xBase,yBase,zoom2);
+		worldCamera = new Camera(xBase,yBase,zoom);
 
 	}
 	
@@ -236,11 +255,11 @@ public class Drawing extends PApplet {
 		     if (key == 'd') dx -= 50;
 		 
 			if( key == 'o'){
-				zoom2 *= 1.1;
+				zoom *= 1.1;
 				key = 'h';
 			}
 			if(key == 'p'){
-				zoom2 *= 0.9;
+				zoom *= 0.9;
 				key = 'h';
 			}
 			if(key == '1'){
@@ -283,53 +302,16 @@ public class Drawing extends PApplet {
 
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
-		scale(zoom2);
+		scale(zoom);
 		
 		int idx = 0;
 		
-		for (Entry<Integer, Table> each : subRecords.entrySet()) {
+		
+		
+		for (Entry<Integer, Table> each : forRecordStack.peek().entrySet()) {
 			int wn = each.getKey(); // get index
 			dif = 0;
 			sub = each.getValue();
-			
-			if (isStacked) {
-				if(iswhenChangeClicked) {
-					sub.sort("whenyear");
-				}
-				else if (isEsrbChangeClicked) {
-					sub.sort("esrb");
-				}
-				else if (isGenreChangeClicked) {
-					sub.sort("genre");
-				}
-				else if (isPlatformChangeClicked) {
-					sub.sort("platform");
-				}
-				else if (isPublisherChangedClicked) {
-					sub.sort("publisher");
-				}
-				else {
-					sub.sort("id");
-				}
-				
-				
-				for (int i = 0 ; i < sub.getRowCount() ; i++)
-					sub.getRow(i).setInt("pos", i+1);
-				
-
-				for (TableRow row : sub.rows()) {
-					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
-					
-				}
-				
-				idx++;
-				
-			}
-			else {
-				idx++;
-				
-			}
-			
 		
 			int tempWeek = 0;
 			int nextrY = 0;
@@ -455,93 +437,14 @@ public class Drawing extends PApplet {
 					nrY += 200;
 					nNrY += 200;
 					
-					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1050);
+					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1800);
 					tempWeek = week;
 					temprY = nrY;
 			
 					
 					cur = new Rectangle(nrX,(int) nrY, w,h);
 					
-					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
-						//마우스를 댄 그 사각형
-						overedName = name;
-						overedplatform = platform;
-						overedWhen = when;
-						overedWeek = week;	
-						overedgenre = genre;
-						overedesrb = esrb;
-								
-						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
-						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
-						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
-					
-						if (whenYearColorMap.get(overedWhen)==color){
-							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
-							color = whenYearColorMap.get(overedWhen);						
-							whenYearColorMap.put(overedWhen,color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),rgb1.getInt("a")));							
-						}else if(esrbColorMap.get(overedesrb)==color){
-							esrbColorMap.put(overedesrb, color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),255));
-							color = esrbColorMap.get(overedesrb);						
-							esrbColorMap.put(overedesrb,color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),rgb2.getInt("a")));
-						}else if(genreColorMap.get(overedgenre)==color){
-							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
-							color = genreColorMap.get(overedgenre);						
-							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
-						}		
-						
-					}
-					else {
-						if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
-							//같은 이름
-							TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
-							if (whenYearColorMap.get(overedWhen)==color) {
-								whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-								color = whenYearColorMap.get(overedWhen);
-								whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
-							}							
-						}							
-						if (overedName.equals(name) && overedplatform.equals(platform) && overedesrb.equals(esrb)){
-							//같은 이름
-							TableRow rgb = esrbColor.findRow((esrb), "esrb");
-							if (esrbColorMap.get(overedesrb)==color) {
-								esrbColorMap.put(overedesrb, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-								color = esrbColorMap.get(overedesrb);
-								esrbColorMap.put(overedesrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
-							}															
-					    }						
-						if (overedName.equals(name) && overedplatform.equals(platform) && overedgenre.equals(genre)){
-							//같은 이름
-							TableRow rgb = genrecolor.findRow((genre), "genre");
-							if (genreColorMap.get(overedgenre)==color) {
-								genreColorMap.put(overedgenre, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-								color = genreColorMap.get(overedgenre);
-								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
-							}							
-						}
-					}
-					
-					
-					
-					
-					
-					if (nextPos != -1) {
-						strokeWeight(7);
-						stroke(color);
-						line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
-					}
-					
-					
-					noStroke();
-					fill(color);
-					rect(nrX,nrY,w,h);
-					
-				}
-				else {
-					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
-					int rY = rbx+pos*(w+d);
-					cur = new Rectangle(rX, rY, w,w);
-					
-					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
+					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 						//마우스를 댄 그 사각형
 						overedName = name;
 						overedplatform = platform;
@@ -600,6 +503,88 @@ public class Drawing extends PApplet {
 					}
 					
 					
+					
+					
+					
+					if (nextPos != -1) {
+						strokeWeight(7);
+						stroke(color);
+						line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
+					}
+					
+					
+					noStroke();
+					fill(color);
+
+					rect(nrX,nrY-10,w,w);
+					cur = new Rectangle(nrX,(int) nrY, w,h);
+
+				}
+				else {
+					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
+					int rY = rbx+pos*(w+d);
+					cur = new Rectangle(rX, rY, w,w);
+					
+
+					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
+						//마우스를 댄 그 사각형
+						overedName = name;
+						overedplatform = platform;
+						overedWhen = when;
+						overedWeek = week;	
+						overedgenre = genre;
+						overedesrb = esrb;
+								
+						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
+						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
+						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
+					
+						if (whenYearColorMap.get(overedWhen)==color){
+							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
+							color = whenYearColorMap.get(overedWhen);						
+							whenYearColorMap.put(overedWhen,color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),rgb1.getInt("a")));							
+						}else if(esrbColorMap.get(overedesrb)==color){
+							esrbColorMap.put(overedesrb, color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),255));
+							color = esrbColorMap.get(overedesrb);						
+							esrbColorMap.put(overedesrb,color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),rgb2.getInt("a")));
+						}else if(genreColorMap.get(overedgenre)==color){
+							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
+							color = genreColorMap.get(overedgenre);						
+							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
+						}		
+						
+					}
+					else {
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
+							//같은 이름
+							TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
+							if (whenYearColorMap.get(overedWhen)==color) {
+								whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = whenYearColorMap.get(overedWhen);
+								whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}							
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedesrb.equals(esrb)){
+							//같은 이름
+							TableRow rgb = esrbColor.findRow((esrb), "esrb");
+							if (esrbColorMap.get(overedesrb)==color) {
+								esrbColorMap.put(overedesrb, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = esrbColorMap.get(overedesrb);
+								esrbColorMap.put(overedesrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}															
+					    }						
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedgenre.equals(genre)){
+							//같은 이름
+							TableRow rgb = genrecolor.findRow((genre), "genrename");
+							if (genreColorMap.get(overedgenre)==color) {
+								genreColorMap.put(overedgenre, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = genreColorMap.get(overedgenre);
+								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+					}
+					
+
 					if (nextPos != -1) {
 						strokeWeight(7);
 						stroke(color);
@@ -613,21 +598,20 @@ public class Drawing extends PApplet {
 					rect(rX,rY,w,w);
 				}
 				
+
 				
 				
 				
-				
-				
-				
+	
 				
 			}
 		}
 		
-		isStacked =false;
+		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
 		
-		scale(1/zoom2);
+		scale(1/zoom);
 			fill(UiColor);
 				//위 사각형
 				float upperRectX = worldCamera.pos.x+dx;
@@ -756,59 +740,133 @@ public class Drawing extends PApplet {
     			
     			
     			//stack click
-    			Rectangle stacked = new Rectangle((int) downRectX+1165,(int) downRectY+12,100,50);
+    			Rectangle stacked = new Rectangle((int) downRectX+1166,(int) downRectY+11,63,81);
     			stacked.x-=worldCamera.pos.x;
     			stacked.y-=worldCamera.pos.y;
     			
     			//stack change
-    			if (mousePressed && stacked.contains(mouseX, mouseY)) {
-    				
-    				if(isStacked)
-    					isStacked = false;
-    				else
+    			if (mousePressed && stacked.contains(mouseX, mouseY)) {	
+    				if(isStacked) {
+    					isStacked =false;
+    					forRecordStack.pop();
+    				}
+    				else {
     					isStacked = true;
-    				delay(500);
-    				
+    					
+    				}
     			}
     			
-    			if(isStacked)
-    				image(stackIcon,downRectX+1165,downRectY+12);
+    			if(isStacked) {
+    				image(stackIcon,downRectX+1166,downRectY+11);
+    				
+    				if(isPlatformChangeClicked) {
+						changeRecord("platform");
+					
+					}
+					else if (isGenreChangeClicked) {
+						changeRecord("genre");
+					
+					}
+					else if (isEsrbChangeClicked) {
+						changeRecord("esrb");
+					
+					}
+					else if (isPublisherChangedClicked) {
+						changeRecord("publisher");
+					
+					}
+					else if (iswhenChangeClicked) {
+						changeRecord("whenyear");
+					
+					}
+    			}
     			
     			
     			fill(255,255,255,0);
-    			rect(downRectX+1165,downRectY+12,61,83);
+    			rect(downRectX+1166,downRectY+11,63,81);
     			
     			//salesChange click
-    			Rectangle salesChange = new Rectangle((int) downRectX+1405,(int) downRectY+25,100,50);
+    			Rectangle salesChange = new Rectangle((int) downRectX+1407,(int) downRectY+17,120,69);
     			
     			salesChange.x-=worldCamera.pos.x;
     			salesChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && salesChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				if(isSales)
+    				if(isSales) {
     					isSales = false;
-    				else 
+    					zoom = normal;
+    				}
+    				else { 
     					isSales = true;
-    				delay(500);
+    					zoom = sales;
+    				}
+    				delay(200);
     			}
-    			else {
-    				fill(0,255,0);
+    			
+    			fill(255,255,255,0);
+    			rect(downRectX+1407,downRectY+17,120,69);
+    			if(isSales)
+    				image(salesIcon,downRectX+1407,downRectY+17);
     				
-    			}
-    			rect(downRectX+1405,downRectY+25,45.709f,45.833f);
-    			//salesChange
-    			textSize(25);
-    			fill(0);
-    			text("Sales",downRectX+1405,downRectY+50);
-    			
-    			
-    			
     			
 			fill(255);
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
 		}
+	
+	void changeRecord(String type) {
+		LinkedHashMap<Integer,Table> splitedRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
+		
+		// Table 을 30개씩 쪼개기 위함
+		for (int week = 0 ; week < weekNum ; week++) {
+			int end = rectNum+week*rectNum ;
+			Table subTable = new Table();
+			
+			for (int col = 0 ; col < table.getColumnCount() ; col++)
+				subTable.addColumn(table.getColumnTitle(col));
+				
+			for (int start = rectNum * week; start < end ; start++) {
+				TableRow row = table.getRow(start);
+				subTable.addRow(row);
+			
+			}
+			
+			subTable.sort(type);
+			splitedRecords.put(week,subTable);
+		}
+		
+			namePos.clear();
+		
+		// 이름 별로 랭킹 및 색을 저장.
+		for (String name : nameSet) {
+			int[] positions = new int[weekNum];
+			Arrays.fill(positions, -1);
+			
+			namePos.put(name, positions);
+		}
+		
+				
+		int idx = 0;
+		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
+
+		for (Entry<Integer,Table> records : splitedRecords.entrySet()) {
+		
+			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
+				records.getValue().getRow(i).setInt("pos", i+1);
+			
+
+			for (TableRow row : records.getValue().rows()) {
+				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				
+			}
+			
+			idx++;
+		}
+				
+		
+		forRecordStack.push(splitedRecords);
+		redraw();
+	}
 	
 	class Camera { 
 		  PVector pos; //Camera's position  
@@ -853,7 +911,7 @@ public class Drawing extends PApplet {
 		      if(key == 'e'){
 		    	  pos.x = basicX;
 		    	  pos.y = basicY;
-		    	  zoom2 = basicZoom;
+		    	  zoom = basicZoom;
 		      }
 		    } 
 
