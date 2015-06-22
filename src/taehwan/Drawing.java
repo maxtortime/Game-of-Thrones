@@ -20,7 +20,7 @@ import processing.data.TableRow;
 public class Drawing extends PApplet {
 	Table table;
 	PFont DIN,GOT;
-	PImage CROWN;
+	PImage CROWN,Footer;
 	final int w = 50; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -79,21 +79,22 @@ public class Drawing extends PApplet {
 	final int yBase = -110;
 	boolean iswhenChangeClicked = false;
 	boolean isGenreChangeClicked = false;
-	boolean isEsrbChangeClicked = false;	boolean isRedraw = false;
-	boolean isPlatformChangeClicked = false; boolean isPublisherChangedClicked = false;
+	boolean isEsrbChangeClicked = false;	
+	boolean isPlatformChangeClicked = false; 
+	boolean isPublisherChangedClicked = false;
+	boolean isRedraw = false;
 	
 	String overedName = new String();
 	String overedplatform = new String();
+	
 	public void setup() {
 		size(1920,960);
 		
 		DIN = createFont("DIN-MEDIUM",14);
 		GOT = createFont("GAME OF THRONES",14);
 		CROWN = loadImage("../crown.png");
-		String overedName = new String();
-		String overedplatform = new String();
-		int backColor = 0;
-
+		Footer = loadImage("../Footer.png");
+		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
 		
@@ -194,7 +195,6 @@ public class Drawing extends PApplet {
 			/*
 			TableRow rgb = publisherColor.findRow(publisher, "publisher");
 			publisherColorMap.put(publisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-			
 			*/
 			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
@@ -206,7 +206,7 @@ public class Drawing extends PApplet {
 	public void draw() {
 		noStroke();
 
-		background(235,235,235);
+		background(51,49,50);
 		String when = "";
 		String name = "";
 		String genre = "";
@@ -359,7 +359,6 @@ public class Drawing extends PApplet {
 				
 				int id = row.getInt("id");
 
-				
 				float nrY = 0;
 				float nNrY = 0;
 
@@ -472,166 +471,85 @@ public class Drawing extends PApplet {
 				float upperRectY = worldCamera.pos.y+dy;
 				
     			rect(upperRectX,upperRectY,width,100);
-    			// 아래 사각형
-    			float downRectX = worldCamera.pos.x+dx;
-				float downRectY = worldCamera.pos.y+dy+height-100;
-				
-    			rect(downRectX,downRectY,width,100);
-       			stroke(58,27,35);
-       			strokeWeight(2);
-    			line(downRectX+130,downRectY+15,downRectX+130,downRectY+85);
-    			image(CROWN ,downRectX+15, downRectY+15);
+    			// 아래쪽
+    			float footerX = worldCamera.pos.x+dx;
+    			float footerY = worldCamera.pos.y+dy+height-204;
+    			image(Footer,footerX,footerY);
+    			
+    			//float downRectX = worldCamera.pos.x+dx;
+				//float downRectY = worldCamera.pos.y+dy+height-100;
+    			float downRectX = footerX;
+    			float downRectY = footerY;
     			
     			//genreChange click
-    			int genreX = 150;
-    			int buttonD = 150;
-    			Rectangle genreChange = new Rectangle((int) downRectX+genreX,(int) downRectY+25,w,w);
+    			Rectangle genreChange = new Rectangle((int) downRectX+50,(int) downRectY+25,100,50);
     			
-    			genreChange.x-=worldCamera.pos.x+dx;
-    			genreChange.y-=worldCamera.pos.y+dy;
+    			genreChange.x-=worldCamera.pos.x;
+    			genreChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
-    				fill(240,81,57);
+    				fill(255,0,0);
+    				
     				iswhenChangeClicked = false;
-    				isPlatformChangeClicked = false;
-    				isPublisherChangedClicked = false;
     				isEsrbChangeClicked = false;
     				isGenreChangeClicked = true;
     			}
     			else {
-    				if (isGenreChangeClicked)
-    					fill(240,81,57);
-    				else
-    					fill(119,50,57);
+    				fill(0,255,0);
     				
     			}
-    			noStroke();
-    			rect(downRectX+genreX+55,downRectY+25,w,w);
-    			
+    			rect(downRectX+50,downRectY+25,100,50);
     			//genreChange
     			textSize(25);
-    			fill(255);
-    			text("genre",downRectX+genreX+w+70*1.2f,downRectY+w+5);
-    			
-    			//platformChange click
-    			int platformX = genreX + buttonD;
-    			Rectangle platformChange = new Rectangle((int) downRectX+platformX,(int) downRectY+25,w,w);
-    			
-    			platformChange.x-=worldCamera.pos.x+dx;
-    			platformChange.y-=worldCamera.pos.y+dy;
-    			
-    			if (mousePressed && platformChange.contains(mouseX, mouseY)) {
-    				fill(240,81,57);
-    				iswhenChangeClicked = false;
-    				isGenreChangeClicked = false;
-    				isPublisherChangedClicked = false;
-    				isEsrbChangeClicked = false;
-    				isPlatformChangeClicked = true;
-    			}
-    			else {
-    				if (isPlatformChangeClicked)
-    					fill(240,81,57);
-    				else
-    					fill(119,50,57);
-    				
-    			}
-    			noStroke();
-    			rect(downRectX+platformX+130,downRectY+25,w,w);
-    			//platformChange
-    			textSize(25);
-    			fill(255);
-    			text("platform",downRectX+platformX+w+120*1.2f,downRectY+55);
-    			
-    			//esrbChange click
-    			int esrbX = platformX + buttonD;
-    			
-    			Rectangle esrbChange = new Rectangle((int) downRectX+esrbX,(int) downRectY+25,w,w);
-    			esrbChange.x-=worldCamera.pos.x+dx;
-    			esrbChange.y-=worldCamera.pos.y+dy;
-    			
-    		
-    			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
-    				fill(240,81,57);
-    				iswhenChangeClicked = false;
-    				isGenreChangeClicked = false;
-    				isPublisherChangedClicked = false;
-    				isPlatformChangeClicked = false;
-    				isEsrbChangeClicked = true;
-    			}
-    			else {
-    				if (isEsrbChangeClicked)
-    					fill(240,81,57);
-    				else
-    					fill(119,50,57);
-    			}
-    			
-    			//esrbChange 
-    			noStroke();
-    			rect(downRectX+esrbX+220,downRectY+25,w,w);
-    			textSize(25);
-    			fill(255);
-    			text("esrb",downRectX+esrbX+w+190*1.2f,downRectY+w+5);
-    			
-    			//publisherChange
-    			
-    			int publisherX = esrbX + buttonD;
-    			Rectangle publisherChange = new Rectangle((int) downRectX+publisherX,(int) downRectY+25,w,w);
-    			publisherChange.x-=worldCamera.pos.x+dx;
-    			publisherChange.y-=worldCamera.pos.y+dy;
-    			
-    			
-    			if (mousePressed && publisherChange.contains(mouseX, mouseY)) {
-    				fill(240,81,57);
-    				iswhenChangeClicked = false;
-    				isGenreChangeClicked = false;
-    				isPlatformChangeClicked = false;
-    			 	isEsrbChangeClicked = false;
-    				isPublisherChangedClicked = true;
-    			}
-    			else {
-    				if (isPublisherChangedClicked)
-    					fill(240,81,57);
-    				else
-    					fill(119,50,57);
-    			}
-    			//publisher draw
-    			int releaseX = publisherX +buttonD;
-    			rect(downRectX+publisherX+270,downRectY+25,w,w);
-    			textSize(25);
-    			fill(255);
-    			text("Publisher",downRectX+publisherX+w+230*1.2f,downRectY+55);
+    			fill(0);
+    			text("genre",downRectX+50,downRectY+50);
     			
     			//whenChange click
-    			Rectangle releaseChange = new Rectangle((int) downRectX+releaseX,(int) downRectY+25,w,w);
+    			Rectangle whenChange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
     			
-    			releaseChange.x-=worldCamera.pos.x+dx;
-    			releaseChange.y-=worldCamera.pos.y+dy;
+    			whenChange.x-=worldCamera.pos.x;
+    			whenChange.y-=worldCamera.pos.y;
     			
-    			if (mousePressed && releaseChange.contains(mouseX, mouseY)) {
-    				fill(240,81,57);
+    			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
     				isGenreChangeClicked = false;
-    				isPlatformChangeClicked = false;
-    			 	isEsrbChangeClicked = false;
-    				isPublisherChangedClicked = false;
+    				isEsrbChangeClicked = false;
     				iswhenChangeClicked = true;
     			}
     			else {
-    				if (iswhenChangeClicked)
-    					fill(240,81,57);
-    				else
-    					fill(119,50,57);
+    				fill(0,255,0);
     			}
-    			noStroke();
-    			rect(downRectX+releaseX+370,downRectY+25,w,w);
+    			rect(downRectX+200,downRectY+25,100,50);
     			//whenChange
     			textSize(25);
-    			fill(255);
-    			text("Release",downRectX+releaseX+w+310*1.2f,downRectY+w+5);
+    			fill(0);
+    			text("When",downRectX+200,downRectY+50);
+    			
+    			//esrbChange click
+    			Rectangle esrbChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
+    			esrbChange.x-=worldCamera.pos.x;
+    			esrbChange.y-=worldCamera.pos.y;
+    			
+    			//esrbChange
+    			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				iswhenChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isEsrbChangeClicked = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    			}
+    			
+    			rect(downRectX+500,downRectY+25,100,50);
+    			textSize(25);
+    			fill(0);
+    			text("esrb",downRectX+500,downRectY+50);
     			
     			
 			fill(255);
 				textFont(GOT,50);
-				text("GAME OF THORNES",worldCamera.pos.x+dx+110,worldCamera.pos.y+dy+65);
+				text("GAME OF THORNES",worldCamera.pos.x+dx+90,worldCamera.pos.y+dy+73);
 				textFont(DIN,20);
 				text(overedName,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
 
