@@ -40,8 +40,10 @@ public class Drawing extends PApplet {
 	int nrbx = 0;
 	int nrby = 0;
 	
-	float zoom1 = 0.78f;
-	float zoom2 = 0.226f;
+	float sales = 0.226f;
+	float normal = 0.226f;
+	
+	float zoom = normal;
 	int MAXWEEK,MINWEEK;
 	
 	Camera worldCamera;
@@ -230,7 +232,7 @@ public class Drawing extends PApplet {
 			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
-		worldCamera = new Camera(xBase,yBase,zoom2);
+		worldCamera = new Camera(xBase,yBase,zoom);
 
 	}
 	
@@ -260,11 +262,11 @@ public class Drawing extends PApplet {
 		     if (key == 'd') dx -= 50;
 		 
 			if( key == 'o'){
-				zoom2 *= 1.1;
+				zoom *= 1.1;
 				key = 'h';
 			}
 			if(key == 'p'){
-				zoom2 *= 0.9;
+				zoom *= 0.9;
 				key = 'h';
 			}
 			if(key == '1'){
@@ -307,7 +309,7 @@ public class Drawing extends PApplet {
 
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
-		scale(zoom2);
+		scale(zoom);
 		
 		int idx = 0;
 		
@@ -442,7 +444,7 @@ public class Drawing extends PApplet {
 					nrY += 200;
 					nNrY += 200;
 					
-					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1050);
+					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1800);
 					tempWeek = week;
 					temprY = nrY;
 			
@@ -453,7 +455,7 @@ public class Drawing extends PApplet {
 					}
 					noStroke();
 					fill(color);
-					rect(nrX,nrY,w,h);
+					rect(nrX,nrY-10,w,w);
 					cur = new Rectangle(nrX,(int) nrY, w,h);
 				}
 				else {
@@ -472,7 +474,7 @@ public class Drawing extends PApplet {
 					rect(rX,rY,w,w);
 				}
 				
-				if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
+				if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 					//마우스를 댄 그 사각형
 					overedName = name;
 					overedplatform = platform;
@@ -513,7 +515,7 @@ public class Drawing extends PApplet {
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
 		
-		scale(1/zoom2);
+		scale(1/zoom);
 			fill(UiColor);
 				//위 사각형
 				float upperRectX = worldCamera.pos.x+dx;
@@ -694,11 +696,15 @@ public class Drawing extends PApplet {
     			salesChange.y-=worldCamera.pos.y;
     			
     			if (mousePressed && salesChange.contains(mouseX, mouseY)) {
-    				if(isSales)
+    				if(isSales) {
     					isSales = false;
-    				else 
+    					zoom = normal;
+    				}
+    				else { 
     					isSales = true;
-    				
+    					zoom = sales;
+    				}
+    				delay(200);
     			}
     			
     			fill(255,255,255,0);
@@ -706,8 +712,6 @@ public class Drawing extends PApplet {
     			if(isSales)
     				image(salesIcon,downRectX+1407,downRectY+17);
     				
-    			
-    			
     			
 			fill(255);
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
@@ -811,7 +815,7 @@ public class Drawing extends PApplet {
 		      if(key == 'e'){
 		    	  pos.x = basicX;
 		    	  pos.y = basicY;
-		    	  zoom2 = basicZoom;
+		    	  zoom = basicZoom;
 		      }
 		    } 
 
