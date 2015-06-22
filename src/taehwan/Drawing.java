@@ -10,9 +10,7 @@ import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
-import processing.core.PGraphics;
 import processing.core.PVector;
-import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
 
