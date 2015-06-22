@@ -166,16 +166,6 @@ public class Drawing extends PApplet {
 		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
 
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
-			//records.getValue().sort("platform");
-			//records.getValue().sort("genre");
-			
-			//records.getValue().sort("when");
-
-			/*
-			for (int i = 0 ; i < records.getValue().getRowCount()-1 ; i++)
-				records.getValue().getRow(i).setInt("pos", i);
-			*/
-
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 				
@@ -224,7 +214,6 @@ public class Drawing extends PApplet {
 		}
 		
 		worldCamera = new Camera(xBase,yBase,zoom);
-
 	}
 	
 	public void draw() {
@@ -237,9 +226,10 @@ public class Drawing extends PApplet {
 		String esrb = "";
 		String platform= "";
 		String publisher ="";
+		int year = 2007;
 	
 		int pos = 0;
-
+		int wn = 0;
 		int dx = 0;
 		int dy = 0;
 	
@@ -302,36 +292,31 @@ public class Drawing extends PApplet {
 		worldCamera.draw();
 		scale(zoom);
 		
-		int idx = 0;
-		
-		
-		
 		for (Entry<Integer, Table> each : forRecordStack.peek().entrySet()) {
-			int wn = each.getKey(); // get index
+			wn = each.getKey(); // get index
+			
+			
+			if(wn % 51 == 0 && wn!=0) {
+				//rect(rbx+wn*(wInterval*w-1),0,width,height);
+				strokeWeight(30);
+				stroke(150,150,150,70);
+				line(rbx+wn*(wInterval*w-1),-50000,rbx+wn*(wInterval*w-1),50000);
+
+				textSize(200);
+				fill(15);
+				text(year,rbx+wn*(wInterval*w-1)-510,3000);
+				year++;
+				
+			}
+			
 			dif = 0;
 			sub = each.getValue();
 		
-			int tempWeek = 0;
-			int nextrY = 0;
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
 			Table before = subRecords.get(wn+1);
 			
-			/*
-			if(isRedraw) {
-				for (int i = 0 ; i < each.getValue().getRowCount() ; i++)
-					each.getValue().getRow(i).setInt("pos", i);
-				
-
-				for (TableRow row : each.getValue().rows()) {
-					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
-				}
-				
-				idx++;
-				
-			}
-			*/
 			for (TableRow row : sub.rows()) {
 				pos = row.getInt("pos");
 				
@@ -369,15 +354,9 @@ public class Drawing extends PApplet {
 				else if (isPublisherChangedClicked)
 					color = publisherColorMap.get(publisher);
 
-				
-			
 				Rectangle cur;
 				
 				if (isSales) {
-				
-
-					int id = row.getInt("id");
-	
 					float nrY = 0;
 					float nNrY = 0;
 	
@@ -436,7 +415,6 @@ public class Drawing extends PApplet {
 					nNrY += 200;
 					
 					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1800);
-					tempWeek = week;
 					temprY = nrY;
 			
 					
@@ -500,10 +478,6 @@ public class Drawing extends PApplet {
 						}
 					}
 					
-					
-					
-					
-					
 					if (nextPos != -1) {
 						strokeWeight(7);
 						stroke(color);
@@ -522,7 +496,6 @@ public class Drawing extends PApplet {
 					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
 					int rY = rbx+pos*(w+d);
 					cur = new Rectangle(rX, rY, w,w);
-					
 
 					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 						//마우스를 댄 그 사각형
@@ -589,8 +562,6 @@ public class Drawing extends PApplet {
 						line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 					}
 					
-					
-					
 					noStroke();
 					fill(color);
 					rect(rX,rY,w,w);
@@ -598,7 +569,6 @@ public class Drawing extends PApplet {
 				
 			}
 		}
-		
 		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
@@ -608,6 +578,7 @@ public class Drawing extends PApplet {
 				//위 사각형
 				float upperRectX = worldCamera.pos.x+dx;
 				float upperRectY = worldCamera.pos.y+dy;
+				
 				image(Header,upperRectX,upperRectY);
     			//rect(upperRectX,upperRectY,width,100);
     			// 아래쪽
@@ -615,8 +586,7 @@ public class Drawing extends PApplet {
     			float footerY = worldCamera.pos.y+dy+height-204;
     			image(Footer,footerX,footerY);
     			
-    			//float downRectX = worldCamera.pos.x+dx;
-				//float downRectY = worldCamera.pos.y+dy+height-100;
+				
     			float downRectX = footerX+230;
     			float downRectY = footerY+60;
     			
@@ -800,10 +770,11 @@ public class Drawing extends PApplet {
     			if(isSales)
     				image(salesIcon,downRectX+1407,downRectY+17);
     				
-    			
+    			/*
 			fill(255);
+			textSize(50);
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
-
+*/
 		}
 	
 	void changeRecord(String type) {
