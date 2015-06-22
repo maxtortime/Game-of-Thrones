@@ -14,13 +14,10 @@ import processing.core.PVector;
 import processing.data.Table;
 import processing.data.TableRow;
 
-
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
 	Table table;
-	ArrayList<Record> records = new ArrayList<Record>();
 
-	
 	final int w = 50; // 사각형의 크기
 	final int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
@@ -36,6 +33,7 @@ public class Drawing extends PApplet {
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
 	Set<String> whenYearSet = new LinkedHashSet<String>();
+	Set<String> esrbSet = new LinkedHashSet<String>();
 	
 	ArrayList<Table> tables = new ArrayList<Table>();
 	
@@ -45,6 +43,7 @@ public class Drawing extends PApplet {
 	LinkedHashMap<String,Integer> genreColorMap = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> whenYearColorMap = new LinkedHashMap<String, Integer>();
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	LinkedHashMap<String,Integer> esrbColorMap = new LinkedHashMap<String,Integer>();
 	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
@@ -55,6 +54,7 @@ public class Drawing extends PApplet {
 	final int yBase = -110;
 	boolean iswhenChangeClicked = false;
 	boolean isGenreChangeClicked = false;
+	boolean isEsrbChangeClicked = false;
 	
 	public void setup() {
 		size(1920,960);
@@ -62,14 +62,8 @@ public class Drawing extends PApplet {
 		table = loadTable("../all.csv","header");
 		Table genrecolor = loadTable("../genrecolor.csv","header");
 		Table yearcolor = loadTable("../yearcolor.csv","header");
-		/*
-		for (int year=2007 ; year < 2012 ; year++) {
-			String filename = "../" + year + "_.csv";
-			tables.add(loadTable(filename,"header"));
-		}
-		*/
-		//table = tables.get(0);
-		
+		Table esrbColor = loadTable("../esrb.csv","header");
+	
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
 		
@@ -91,14 +85,12 @@ public class Drawing extends PApplet {
 				genreSet.add(row.getString("genre"));
 				platformSet.add(row.getString("platform"));
 				whenYearSet.add(row.getString("whenyear"));
-				
-				records.add(new Record(row));
-				
+				esrbSet.add(row.getString("esrb"));
 			}
 			subRecords.put(week,subTable);
 		}
 		
-		// 이름 별로 랭킹을 담는 역할
+		// 이름 별로 랭킹 및 색을 저장.
 		for (String name : nameSet) {
 			int[] positions = new int[weekNum];
 			Arrays.fill(positions, -1);
@@ -109,15 +101,16 @@ public class Drawing extends PApplet {
 		
 		int idx = 0;
 		
+		// 각 주마다 게임 이름별로 랭킹을 담고 있는 namePos를 담고 있음
 		for (Entry<Integer,Table> records : subRecords.entrySet()) {
 			//records.getValue().sort("platform");
 			//records.getValue().sort("genre");
 			
 			//records.getValue().sort("when");
-			
+			/*
 			for (int i = 0 ; i < records.getValue().getRowCount() ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
-			
+			*/
 			for (TableRow row : records.getValue().rows()) {
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
 			}
@@ -127,22 +120,20 @@ public class Drawing extends PApplet {
 		
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
-			try {
-				genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-			} catch (NullPointerException e) {
-				genreColorMap.put(genre, color(255,255,255,120));
-			}
-			
+
+			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}
-		
-		/*
 		for (String platform : platformSet)
 			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-		*/
+		
 		for (String when : whenYearSet) {
 			TableRow rgb = yearcolor.findRow(when, "year");
-			
 			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+		}
+		
+		for (String esrb : esrbSet) {
+			TableRow rgb = esrbColor.findRow(esrb, "esrb");
+			esrbColorMap.put(esrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b")));
 		}
 		
 		worldCamera = new Camera(xBase,yBase,zoom); 
@@ -150,12 +141,12 @@ public class Drawing extends PApplet {
 	
 	public void draw() {
 		noStroke();
-		background(200);
+		background(235,235,235);
 		String when = "";
 		String name = "";
 		String genre = "";
+		String esrb = "";
 
-		
 		int dx = 0;
 		int dy = 0;
 	
@@ -175,11 +166,9 @@ public class Drawing extends PApplet {
 		    if (key == 'd') dx -= 50;
 		}
 		
-		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y);
 		worldCamera.draw();
 		scale(zoom);
-		
 		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
 			int wn = each.getKey();
@@ -191,39 +180,23 @@ public class Drawing extends PApplet {
 				when = row.getString("whenyear");
 				name = row.getString("name");
 				genre = row.getString("genre");
-				/*
-				if (!iswhenChangeClicked)
-					color = nameColor.get(name);
-				else 
-					color = whenYearColorMap.get(when);
+				esrb = row.getString("esrb");
 				
-				if(!isGenreChangeClicked)
-					color = nameColor.get(name);
-				else 
-					color = whenYearColorMap.get(genre);
-				*/
-				if(isGenreChangeClicked)
+				if(iswhenChangeClicked)
+					color = whenYearColorMap.get(when);
+				else if (isEsrbChangeClicked)
+					color = esrbColorMap.get(esrb);
+				else if (isGenreChangeClicked)
 					color = genreColorMap.get(genre);
-				else if(iswhenChangeClicked)
-					color = whenYearColorMap.get(when);
 				else
-					color = nameColor.get(name);
+					color = genreColorMap.get(genre);
 			
-				//int color = genreColorMap.get(genre);
+			
 				int nextPos = namePos.get(name)[wn];
-				
-				//int rX = rbx+w*(wn*wInterval-2);
+
 				int rX = rbx+(wn-1)*(wInterval*w-1);
 				int rY = rbx+pos*(w+d);
-				/*
-				fill(0);
-				// name is too long
-				textSize(12);
-				if (name.length()<15)
-					text(name,rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
-				else
-					text(name.substring(0,7)+"...",rbx+w*(wn*wInterval-2),rbx+pos*(w+d));
-				*/
+				
 				noStroke();
 				fill(color);
 				rect(rX,rY,w,w);
@@ -250,6 +223,29 @@ public class Drawing extends PApplet {
 				float downRectY = worldCamera.pos.y+dy+height-100;
     			rect(downRectX,downRectY,width,100);
     			
+    			//genreChange click
+    			Rectangle genreChange = new Rectangle((int) downRectX+50,(int) downRectY+25,100,50);
+    			
+    			genreChange.x-=worldCamera.pos.x;
+    			genreChange.y-=worldCamera.pos.y;
+    			
+    			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				
+    				iswhenChangeClicked = false;
+    				isEsrbChangeClicked = false;
+    				isGenreChangeClicked = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    				
+    			}
+    			rect(downRectX+50,downRectY+25,100,50);
+    			//genreChange
+    			textSize(25);
+    			fill(0);
+    			text("genre",downRectX+50,downRectY+50);
+    			
     			//whenChange click
     			Rectangle whenChange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
     			
@@ -258,37 +254,44 @@ public class Drawing extends PApplet {
     			
     			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
     				fill(255,0,0);
-    				iswhenChangeClicked = true;
-    				//redraw();
-    			}
-    			else {
-    				fill(0,255,0);
-    				iswhenChangeClicked = false;
-    			}
-    			//whenChange	
-    			rect(downRectX+200,downRectY+25,100,50);
-    			
-    			//genreChange click
-    			Rectangle genreChange = new Rectangle((int) downRectX+350,(int) downRectY+25,100,50);
-    			genreChange.x-=worldCamera.pos.x;
-    			genreChange.y-=worldCamera.pos.y;
-    			
-    			//genreChange	
-
-    			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
-    				fill(255,0,0);
-    				isGenreChangeClicked = true;
-    				//redraw();
-    			}
-    			else {
-    				fill(0,255,0);
     				isGenreChangeClicked = false;
+    				isEsrbChangeClicked = false;
+    				iswhenChangeClicked = true;
     			}
-    			rect(downRectX+350,downRectY+25,100,50);
+    			else {
+    				fill(0,255,0);
+    			}
+    			rect(downRectX+200,downRectY+25,100,50);
+    			//whenChange
+    			textSize(25);
+    			fill(0);
+    			text("When",downRectX+200,downRectY+50);
+    			
+    			//esrbChange click
+    			Rectangle esrbChange = new Rectangle((int) downRectX+500,(int) downRectY+25,100,50);
+    			esrbChange.x-=worldCamera.pos.x;
+    			esrbChange.y-=worldCamera.pos.y;
+    			
+    			//esrbChange
+    			if (mousePressed && esrbChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				iswhenChangeClicked = false;
+    				isGenreChangeClicked = false;
+    				isEsrbChangeClicked = true;
+    			}
+    			else {
+    				fill(0,255,0);
+    			}
+    			
+    			rect(downRectX+500,downRectY+25,100,50);
+    			textSize(25);
+    			fill(0);
+    			text("esrb",downRectX+500,downRectY+50);
+    			
+    			
 			fill(255);
 				textSize(50);
 				text("GAME OF THORNES",worldCamera.pos.x+dx+110,worldCamera.pos.y+dy+65);
-
 	}
 	
 	class Camera { 
