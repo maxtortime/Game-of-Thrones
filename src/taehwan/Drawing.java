@@ -19,6 +19,10 @@ import processing.data.TableRow;
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
 	Table table;
+	Table genrecolor;
+	Table yearcolor;
+	Table publisherColor;
+	Table esrbColor;
 	PFont DIN,GOT;
 	PImage CROWN,Footer;
 	final int w = 50; // 사각형의 크기
@@ -86,6 +90,7 @@ public class Drawing extends PApplet {
 	
 	String overedName = new String();
 	String overedplatform = new String();
+	String overedWhen = new String();
 	
 	public void setup() {
 		size(1920,960);
@@ -102,10 +107,10 @@ public class Drawing extends PApplet {
 		nrbx = width;
 		
 		table = loadTable("../all.csv","header");
-		Table genrecolor = loadTable("../genrecolor.csv","header");
-		Table yearcolor = loadTable("../yearcolor.csv","header");
-		Table esrbColor = loadTable("../esrb.csv","header");
-		Table publisherColor = loadTable("../publishercolor.csv","header");
+		genrecolor = loadTable("../genrecolor.csv","header");
+		yearcolor = loadTable("../yearcolor.csv","header");
+		esrbColor = loadTable("../esrb.csv","header");
+		publisherColor = loadTable("../publishercolor.csv","header");
 		
 		MINWEEK = table.getIntList("week").min();
 		MAXWEEK = table.getIntList("week").max();
@@ -299,7 +304,7 @@ public class Drawing extends PApplet {
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
-			
+			println(sub.getRowCount());
 			Table before = subRecords.get(wn+1);
 			
 			/*
@@ -358,21 +363,39 @@ public class Drawing extends PApplet {
 				
 				if (cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
 					//마우스를 댄 그 사각형
-					fill(0);
-					stroke(0);
-					
 					overedName = name;
 					overedplatform = platform;
-					//textSize(50);
-					//fill(0);
+					overedWhen = when;
 					
-					//text(name,(mouseX+worldCamera.pos.x)/zoom1,(mouseY+worldCamera.pos.y)/zoom1);
+					println(whenYearColorMap.get(when),color);
+					TableRow rgb = yearcolor.findRow(when, "year");
+					
+					if (whenYearColorMap.get(overedWhen)==color) {
+						whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+						fill(whenYearColorMap.get(overedWhen));
+						stroke(whenYearColorMap.get(overedWhen));
+						whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+					}
+					else {
+						fill(color);
+						stroke(color);
+					}
 				}
 				else {
-					if (overedName.equals(name) && overedplatform.equals(platform)) {
+					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen.equals(when)) {
 						//같은 이름
-						fill(0);
-						stroke(0);
+						TableRow rgb = yearcolor.findRow(when, "year");
+						if (whenYearColorMap.get(overedWhen)==color) {
+							whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+							fill(whenYearColorMap.get(overedWhen));
+							stroke(whenYearColorMap.get(overedWhen));
+							whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+						}
+						else {
+							fill(color);
+						}
+						
+						
 					}	
 					else {
 						// 아예 아님
@@ -380,16 +403,11 @@ public class Drawing extends PApplet {
 						stroke(color);
 					}
 				}
-				
-				//fill(color);
-				
 				if (nextPos != -1) {
 					strokeWeight(5);
-					//stroke(color);
-				
 					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 				}
-				
+				noStroke();
 				rect(rX,rY,w,w);
 				
 				/*
