@@ -1,5 +1,6 @@
 package taehwan;
 
+import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashMap;
@@ -9,16 +10,16 @@ import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
-import processing.core.PGraphics;
 import processing.core.PVector;
-import processing.data.IntDict;
 import processing.data.Table;
 import processing.data.TableRow;
+
 
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
+
 	
 	final int w = 50; // 사각형의 크기
 	final int d = 50; // 사각형간의 차이
@@ -27,7 +28,7 @@ public class Drawing extends PApplet {
 	final int weekNum = 408; // 51 * (year)
 	final int wInterval = 3;
 	
-	float zoom = 1;
+	float zoom = 0.226f;
 	int MAXWEEK,MINWEEK;
 	
 	Camera worldCamera;
@@ -49,6 +50,11 @@ public class Drawing extends PApplet {
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 	
 	int UiColor = color(94,31,47);
+	int color = 0;
+	final int xBase = 0;
+	final int yBase = -110;
+	boolean iswhenChangeClicked = false;
+	boolean isGenreChangeClicked = false;
 	
 	public void setup() {
 		size(1920,960);
@@ -139,32 +145,38 @@ public class Drawing extends PApplet {
 			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}
 		
-		worldCamera = new Camera(); 
+		worldCamera = new Camera(xBase,yBase,zoom); 
 	}
 	
 	public void draw() {
 		noStroke();
 		background(200);
+		String when = "";
+		String name = "";
+		String genre = "";
+
 		
-		//upper rect
-		fill(UiColor);
-		rect(0,0,width,90);
-		
-		fill(255);
-		textSize(50);
-		text("GAME OF THORNES",90,38+23);
-		
-		if( key == 'o'){
-			zoom *= 1.1;
-			key = '1';
+		int dx = 0;
+		int dy = 0;
+	
+		if (keyPressed) {
+			if( key == 'o'){
+				zoom *= 1.1;
+				key = '1';
+			}
+			if(key == 'p'){
+				zoom *= 0.9;
+				key = '2';
+			}
+			// 카메라가 변해도 UI 가 변하게 하지 않기 위해서
+			if (key == 'w') dy += 50; 
+			if (key == 's') dy -= 50; 
+		    if (key == 'a') dx += 50; 
+		    if (key == 'd') dx -= 50;
 		}
-		if(key == 'p'){
-			zoom *= 0.9;
-			key = '2';
-		}
 		
 		
-		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
+		translate(-worldCamera.pos.x, -worldCamera.pos.y);
 		worldCamera.draw();
 		scale(zoom);
 		
@@ -176,12 +188,26 @@ public class Drawing extends PApplet {
 
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
-				String when = row.getString("whenyear");
-				String name = row.getString("name");
-				String genre = row.getString("genre");
-	
-				//int color = nameColor.get(name);
-				int color = whenYearColorMap.get(when);
+				when = row.getString("whenyear");
+				name = row.getString("name");
+				genre = row.getString("genre");
+				/*
+				if (!iswhenChangeClicked)
+					color = nameColor.get(name);
+				else 
+					color = whenYearColorMap.get(when);
+				
+				if(!isGenreChangeClicked)
+					color = nameColor.get(name);
+				else 
+					color = whenYearColorMap.get(genre);
+				*/
+				if(isGenreChangeClicked)
+					color = genreColorMap.get(genre);
+				else if(iswhenChangeClicked)
+					color = whenYearColorMap.get(when);
+				else
+					color = nameColor.get(name);
 			
 				//int color = genreColorMap.get(genre);
 				int nextPos = namePos.get(name)[wn];
@@ -209,17 +235,85 @@ public class Drawing extends PApplet {
 				}
 			}
 		}
+		
+		// UI 부분으로 카메라의 적용을 받지 않음
+		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
+		scale(1/zoom);
+			fill(UiColor);
+				//위 사각형
+				float upperRectX = worldCamera.pos.x+dx;
+				float upperRectY = worldCamera.pos.y+dy;
+				
+    			rect(upperRectX,upperRectY,width,100);
+    			// 아래 사각형
+    			float downRectX = worldCamera.pos.x+dx;
+				float downRectY = worldCamera.pos.y+dy+height-100;
+    			rect(downRectX,downRectY,width,100);
+    			
+    			//whenChange click
+    			Rectangle whenChange = new Rectangle((int) downRectX+200,(int) downRectY+25,100,50);
+    			
+    			whenChange.x-=worldCamera.pos.x;
+    			whenChange.y-=worldCamera.pos.y;
+    			
+    			if (mousePressed && whenChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				iswhenChangeClicked = true;
+    				//redraw();
+    			}
+    			else {
+    				fill(0,255,0);
+    				iswhenChangeClicked = false;
+    			}
+    			//whenChange	
+    			rect(downRectX+200,downRectY+25,100,50);
+    			
+    			//genreChange click
+    			Rectangle genreChange = new Rectangle((int) downRectX+350,(int) downRectY+25,100,50);
+    			genreChange.x-=worldCamera.pos.x;
+    			genreChange.y-=worldCamera.pos.y;
+    			
+    			//genreChange	
+
+    			if (mousePressed && genreChange.contains(mouseX, mouseY)) {
+    				fill(255,0,0);
+    				isGenreChangeClicked = true;
+    				//redraw();
+    			}
+    			else {
+    				fill(0,255,0);
+    				isGenreChangeClicked = false;
+    			}
+    			rect(downRectX+350,downRectY+25,100,50);
+			fill(255);
+				textSize(50);
+				text("GAME OF THORNES",worldCamera.pos.x+dx+110,worldCamera.pos.y+dy+65);
+
 	}
 	
 	class Camera { 
 		  PVector pos; //Camera's position  
 		  //The Camera should sit in the top left of the window
-		  
+		  float basicZoom = 0;
+		  float basicX = 0;
+		  float basicY = 0;
 		  Camera() { 
 		    pos = new PVector(0, 0); 
 		    //You should play with the program and code to see how the staring position can be changed 
 		  } 
-		  void draw() { 
+		  public Camera(int x, int y) {
+			 pos = new PVector(x,y);
+			 basicX = x;
+			 basicY = y;
+		  }
+		  public Camera(int x, int y,float uZoom) {
+				 pos = new PVector(x,y);
+				 basicX = x;
+				 basicY = y;
+				 basicZoom = uZoom;
+				
+			  }
+		void draw() { 
 		    //I used the mouse to move the camera 
 		    //The mouse's position is always relative to the screen and not the camera's position 
 		    //E.g. if the mouse is at 1000,1000 then the mouse's position does not add 1000,1000 to keep up with the camera
@@ -228,19 +322,24 @@ public class Drawing extends PApplet {
 		    //I noticed on the web the program struggles to find the mouse so I made it key pressed 
 
 		    if (keyPressed) { 
-		      if (key == 'w') pos.y -= 50; 
-		      if (key == 's') pos.y += 50; 
-		      if (key == 'a') pos.x -= 50; 
-		      if (key == 'd') pos.x += 50; 
+		    	
+		      if (key == 'w') 
+		    	  pos.y -= 50; 
+		      if (key == 's') 
+		    	  pos.y += 50; 
+		      if (key == 'a') 
+		    	  pos.x -= 50; 
+		      if (key == 'd') 
+		    	  pos.x += 50; 
 		      if(key == 'e'){
-		    	  pos.x = 0;
-		    	  pos.y = 0;
-		    	  zoom = 1;
+		    	  pos.x = basicX;
+		    	  pos.y = basicY;
+		    	  zoom = basicZoom;
 		      }
 		    } 
 		  }
-		 
 	}  
+
 }
 
 
