@@ -220,16 +220,16 @@ public class Drawing extends PApplet {
 		}
 		
 		for (String publisher : publisherSet) {
-			/*
+			
 			TableRow rgb = publisherColor.findRow(publisher, "publisher");
 			try {
 				publisherColorMap.put(publisher,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 			} catch (NullPointerException e) {
 				publisherColorMap.put(publisher, color(192));
 			}
-			*/
 			
-			publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
+			
+			//publisherColorMap.put(publisher, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
 		}
 		
 		worldCamera = new Camera(xBase,yBase,zoom);
