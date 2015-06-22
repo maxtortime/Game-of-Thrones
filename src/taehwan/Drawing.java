@@ -95,6 +95,8 @@ public class Drawing extends PApplet {
 	String overedName = new String();
 	int overedWeek = 0;
 	String overedplatform = new String();
+	String overedgenre = new String();
+	String overedesrb = new String();
 	int overedWhen = 0;
 	
 	public void setup() {
@@ -178,14 +180,6 @@ public class Drawing extends PApplet {
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-
-			int R = rgb.getInt("r");
-			int G = rgb.getInt("g");
-			int B = rgb.getInt("b");
-			int A = rgb.getInt("a");
-			
-			genreColorMap.put(genre, color(R,G,B,A));
-
 		}
 		for (String platform : platformSet)
 			platformColorMap.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
@@ -193,8 +187,7 @@ public class Drawing extends PApplet {
 		for (Integer when : whenYearSet) {
 			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
 			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-		}
-		
+		}		
 		for (String esrb : esrbSet) {
 			TableRow rgb = esrbColor.findRow(esrb, "esrb");
 			esrbColorMap.put(esrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
@@ -395,14 +388,14 @@ public class Drawing extends PApplet {
 					color = platformColorMap.get(platform);
 				else if (isPublisherChangedClicked)
 					color = publisherColorMap.get(publisher);
-				else
-					color = genreColorMap.get(genre);
+
 				
 			
 				Rectangle cur;
 				
 				if (isSales) {
 				
+
 					int id = row.getInt("id");
 	
 					float nrY = 0;
@@ -466,77 +459,164 @@ public class Drawing extends PApplet {
 					tempWeek = week;
 					temprY = nrY;
 			
+					
+					cur = new Rectangle(nrX,(int) nrY, w,h);
+					
+					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
+						//마우스를 댄 그 사각형
+						overedName = name;
+						overedplatform = platform;
+						overedWhen = when;
+						overedWeek = week;	
+						overedgenre = genre;
+						overedesrb = esrb;
+								
+						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
+						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
+						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
+					
+						if (whenYearColorMap.get(overedWhen)==color){
+							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
+							color = whenYearColorMap.get(overedWhen);						
+							whenYearColorMap.put(overedWhen,color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),rgb1.getInt("a")));							
+						}else if(esrbColorMap.get(overedesrb)==color){
+							esrbColorMap.put(overedesrb, color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),255));
+							color = esrbColorMap.get(overedesrb);						
+							esrbColorMap.put(overedesrb,color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),rgb2.getInt("a")));
+						}else if(genreColorMap.get(overedgenre)==color){
+							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
+							color = genreColorMap.get(overedgenre);						
+							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
+						}		
+						
+					}
+					else {
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
+							//같은 이름
+							TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
+							if (whenYearColorMap.get(overedWhen)==color) {
+								whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = whenYearColorMap.get(overedWhen);
+								whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}							
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedesrb.equals(esrb)){
+							//같은 이름
+							TableRow rgb = esrbColor.findRow((esrb), "esrb");
+							if (esrbColorMap.get(overedesrb)==color) {
+								esrbColorMap.put(overedesrb, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = esrbColorMap.get(overedesrb);
+								esrbColorMap.put(overedesrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}															
+					    }						
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedgenre.equals(genre)){
+							//같은 이름
+							TableRow rgb = genrecolor.findRow((genre), "genre");
+							if (genreColorMap.get(overedgenre)==color) {
+								genreColorMap.put(overedgenre, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = genreColorMap.get(overedgenre);
+								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+					}
+					
+					
+					
+					
+					
 					if (nextPos != -1) {
-						strokeWeight(5);
+						strokeWeight(7);
 						stroke(color);
 						line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
 					}
+					
+					
 					noStroke();
 					fill(color);
 					rect(nrX,nrY,w,h);
-					cur = new Rectangle(nrX,(int) nrY, w,h);
+					
 				}
 				else {
 					int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
 					int rY = rbx+pos*(w+d);
 					cur = new Rectangle(rX, rY, w,w);
+					
+					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
+						//마우스를 댄 그 사각형
+						overedName = name;
+						overedplatform = platform;
+						overedWhen = when;
+						overedWeek = week;	
+						overedgenre = genre;
+						overedesrb = esrb;
+								
+						TableRow rgb1 = yearcolor.findRow(Integer.toString(when), "year");
+						TableRow rgb2 = esrbColor.findRow((esrb), "esrb");
+						TableRow rgb3 = genrecolor.findRow((genre), "genrename");
+					
+						if (whenYearColorMap.get(overedWhen)==color){
+							whenYearColorMap.put(overedWhen, color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),255));
+							color = whenYearColorMap.get(overedWhen);						
+							whenYearColorMap.put(overedWhen,color(rgb1.getInt("r"),rgb1.getInt("g"),rgb1.getInt("b"),rgb1.getInt("a")));							
+						}else if(esrbColorMap.get(overedesrb)==color){
+							esrbColorMap.put(overedesrb, color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),255));
+							color = esrbColorMap.get(overedesrb);						
+							esrbColorMap.put(overedesrb,color(rgb2.getInt("r"),rgb2.getInt("g"),rgb2.getInt("b"),rgb2.getInt("a")));
+						}else if(genreColorMap.get(overedgenre)==color){
+							genreColorMap.put(overedgenre, color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),255));
+							color = genreColorMap.get(overedgenre);						
+							genreColorMap.put(overedgenre,color(rgb3.getInt("r"),rgb3.getInt("g"),rgb3.getInt("b"),rgb3.getInt("a")));
+						}		
+						
+					}
+					else {
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
+							//같은 이름
+							TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
+							if (whenYearColorMap.get(overedWhen)==color) {
+								whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = whenYearColorMap.get(overedWhen);
+								whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}							
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedesrb.equals(esrb)){
+							//같은 이름
+							TableRow rgb = esrbColor.findRow((esrb), "esrb");
+							if (esrbColorMap.get(overedesrb)==color) {
+								esrbColorMap.put(overedesrb, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = esrbColorMap.get(overedesrb);
+								esrbColorMap.put(overedesrb,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}															
+					    }						
+						if (overedName.equals(name) && overedplatform.equals(platform) && overedgenre.equals(genre)){
+							//같은 이름
+							TableRow rgb = genrecolor.findRow((genre), "genrename");
+							if (genreColorMap.get(overedgenre)==color) {
+								genreColorMap.put(overedgenre, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+								color = genreColorMap.get(overedgenre);
+								genreColorMap.put(overedgenre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));								
+							}							
+						}
+					}
+					
+					
 					if (nextPos != -1) {
 						strokeWeight(7);
 						stroke(color);
 						line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 					}
 					
+					
+					
 					noStroke();
 					fill(color);
 					rect(rX,rY,w,w);
 				}
 				
-				if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom2, (mouseY+worldCamera.pos.y)/zoom2)) {
-					//마우스를 댄 그 사각형
-					overedName = name;
-					overedplatform = platform;
-					overedWhen = when;
-					overedWeek = week;
-					
-					TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
-					
-					if (whenYearColorMap.get(overedWhen)==color) {
-						whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-						color = whenYearColorMap.get(overedWhen);
-						
-						whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-					}
-					/*
-					else {
-						fill(color);
-						stroke(color);
-					}
-					*/
-				}
-				else {
-					if (overedName.equals(name) && overedplatform.equals(platform) && overedWhen == when) {
-						//같은 이름
-						TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
-						if (whenYearColorMap.get(overedWhen)==color) {
-							whenYearColorMap.put(overedWhen, color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
-							color = whenYearColorMap.get(overedWhen);
-							whenYearColorMap.put(overedWhen,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
-						}
-						/*
-						else {
-							fill(color);
-						}
-						*/
-						
-					}
-					/*
-					else {
-						// 아예 아님
-						fill(color);
-						stroke(color);
-					}
-					*/
-				}
+				
+				
+				
+				
 				
 				
 				
