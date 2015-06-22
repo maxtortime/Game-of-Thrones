@@ -64,6 +64,7 @@ public class Drawing extends PApplet {
 	String overedName = new String();
 	String overedplatform = new String();
 	int backColor = 0;
+	boolean isRedraw = false;
 	
 	public void setup() {
 		size(1200,800);
@@ -173,7 +174,7 @@ public class Drawing extends PApplet {
 		noStroke();
 		
 		background(20);
-		
+		Table sub = new Table();
 		int dx = 0;
 		int dy = 0;
 		
@@ -247,16 +248,31 @@ public class Drawing extends PApplet {
 		worldCamera.draw();
 		scale(zoom);
 		
+		int idx = 0;
+		
 		for (Entry<Integer, Table> each : subRecords.entrySet()) {
 			int wn = each.getKey(); // get index
 			dif = 0;
 			
-			Table sub = each.getValue();
+			sub = each.getValue();
 			int tempWeek = 0;
 			int nextrY = 0;
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
+			
+			if(isRedraw) {
+				for (int i = 0 ; i < each.getValue().getRowCount() ; i++)
+					each.getValue().getRow(i).setInt("pos", i);
+				
+
+				for (TableRow row : each.getValue().rows()) {
+					namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				}
+				
+				idx++;
+				
+			}
 
 			for (TableRow row : sub.rows()) {
 				int pos = row.getInt("pos");
@@ -318,9 +334,7 @@ public class Drawing extends PApplet {
 				
 				//float rY = rbx-week/temp*8;
 				
-				
-				
-				
+		
 				//println(pos,name,rY);
 
 				// name is too long
@@ -374,7 +388,16 @@ public class Drawing extends PApplet {
 		
 		
 		scale(1/zoom);
-		fill(132);
+		//fill(132);
+		Rectangle btn1 = new Rectangle((int)worldCamera.pos.x+dx,(int)worldCamera.pos.y+dy,width,100);
+		if (mousePressed && btn1.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
+			fill(255,0,0);
+			isRedraw = true;
+		}
+		else {
+			isRedraw = false;
+			fill(132);
+		}
 		rect(worldCamera.pos.x+dx,worldCamera.pos.y+dy,width,100);
 	}
 	
