@@ -61,10 +61,12 @@ public class Drawing extends PApplet {
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
+
 	String overedName = new String();
 	String overedplatform = new String();
 	int backColor = 0;
 	boolean isRedraw = false;
+
 	
 	public void setup() {
 		size(1200,800);
