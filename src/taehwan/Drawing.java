@@ -10,6 +10,7 @@ import java.util.Random;
 import java.util.Set;
 
 import processing.core.PApplet;
+import processing.core.PGraphics;
 import processing.core.PVector;
 import processing.data.IntDict;
 import processing.data.Table;
@@ -20,7 +21,7 @@ public class Drawing extends PApplet {
 	Table table;
 	ArrayList<Record> records = new ArrayList<Record>();
 	
-	final int w = 30; // 사각형의 크기
+	final int w = 20; // 사각형의 크기
 	final int h = 3;
 	//final int rbx = 20; // 첫 사각형의 x 좌표 
 	int rbx,rby;
@@ -61,10 +62,12 @@ public class Drawing extends PApplet {
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
 	String overedName = new String();
+	String overedplatform = new String();
 	int backColor = 0;
 	
 	public void setup() {
 		size(1200,800);
+		
 		d = height/rectNum; // 사각형간의 차이
 		dif = 0;
 		
@@ -168,18 +171,78 @@ public class Drawing extends PApplet {
 	
 	public void draw() {
 		noStroke();
-
-		background(200);
-
+		
+		background(20);
+		
+		int dx = 0;
+		int dy = 0;
+		
+		// camera에 적용받지 않는 도형을 그리기 위해
+		if (keyPressed) {
+			 if (key == 'w') dy += 50; 
+			 if (key == 's') dy -= 50; 
+		     if (key == 'a') dx+= 50; 
+		     if (key == 'd') dx -= 50;
+		 }
+		
+		
 		if( key == 'o'){
-			zoom += 0.1;
-			key = '1';
+			zoom *= 1.1;
+			key = 'h';
 		}
 		if(key == 'p'){
-			zoom -= 0.1;
-			key = '2';
+			zoom *= 0.9;
+			key = 'h';
 		}
+		if(key == '1'){
+			temp1 += 0.1;
+			key = 'h';
+		}
+		if(key == '2'){
+			temp2 += 0.1;
+			key = 'h';
+		}
+		if(key == '3'){
+			temp3 += 0.1;
+			key = 'h';
+		}
+		if(key == '4'){
+			temp4 += 0.1;
+			key = 'h';
+		}
+		if(key == '5'){
+			temp5 += 0.1;
+			key = 'h';
+		}
+		if(key == '6'){
+			temp6 += 0.1;
+			key = 'h';
+		}
+		if(key == '7'){
+			temp7 += 0.1;
+			key = 'h';
+		}
+		if(key == '8'){
+			temp8 += 0.1;
+			key = 'h';
+		}
+		if(key == '9'){
+			temp9 += 0.1;
+			key = 'h';
+		}
+		
 
+		println(temp1 + "temp1");
+		println(temp2 + "temp2");
+		println(temp3 + "temp3");
+		println(temp4 + "temp4");
+		println(temp5 + "temp5");
+		println(temp6 + "temp6");
+		println(temp7 + "temp7");
+		println(temp8 + "temp8");
+		println(temp9 + "temp9");
+
+		
 		translate(-worldCamera.pos.x, -worldCamera.pos.y); 
 		worldCamera.draw();
 		scale(zoom);
@@ -199,6 +262,7 @@ public class Drawing extends PApplet {
 				int pos = row.getInt("pos");
 				int id = row.getInt("id");
 				String when = row.getString("whenyear");
+				String platform = row.getString("platform");
 				String name = row.getString("name");
 				String genre = row.getString("genre");
 				int week = row.getInt("week");
@@ -232,12 +296,19 @@ public class Drawing extends PApplet {
 					rY = 200 - week/1500*temp7;
 				}else if(week<250000){
 					rY = 100 - week/2500*temp8;
+				}else if(week<400000){
+					rY = 100 - week/4000*temp8;
 				}else{
 					rY = -week/10000*temp9;
 				}
+
+				if (Math.abs(temprY-rY)<h){
+					rY = temprY - h;
+				}
+
+				rY += 200;
 				
-				
-				int rX = (int) (rbx+(wn-1)*(wInterval*w-1));
+				int rX = (int) (rbx+(wn-1)*(wInterval*w-1)-1050);
 				tempWeek = week;
 				temprY = rY;
 				
@@ -251,7 +322,7 @@ public class Drawing extends PApplet {
 				
 				
 				//println(pos,name,rY);
-				fill(0);
+
 				// name is too long
 				//if (name.length()<15)
 				//	text(name,rX,rY);
@@ -260,24 +331,19 @@ public class Drawing extends PApplet {
 				
 				noStroke();
 	
-				Rectangle cur = new Rectangle(rX,(int) rY,w,w);
-				cur.x-=worldCamera.pos.x;
-				cur.y-=worldCamera.pos.y;
-				
-				cur.x*=zoom;
-				cur.y*=zoom;
+				Rectangle cur = new Rectangle(rX,(int) rY, w,h);
 			
 				
-				if (cur.contains(mouseX, mouseY)) {
+				if (cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 					fill(255);
-					stroke(255);
 					overedName = name;
-					fill(0);
+					overedplatform = platform; 
+					fill(255);
 					textSize(50);
-					text(name,worldCamera.pos.x,worldCamera.pos.y+50);
+					text(week,worldCamera.pos.x+50,worldCamera.pos.y+50);
 				}
 				else {
-					if (overedName.equals(name)) {
+					if (overedName.equals(name) && overedplatform.equals(platform)) {
 						fill(255);
 						stroke(255);
 					}	
@@ -286,8 +352,8 @@ public class Drawing extends PApplet {
 						stroke(color);
 					}
 				}
-				
-				rect(rX,rY,w,w);
+				noStroke();
+				rect(rX,rY,w,h);
 				/*
 				if (nextPos != -1) {
 					strokeWeight(5);
@@ -305,6 +371,11 @@ public class Drawing extends PApplet {
 //				}
 			}
 		}
+		
+		
+		scale(1/zoom);
+		fill(132);
+		rect(worldCamera.pos.x+dx,worldCamera.pos.y+dy,width,100);
 	}
 	
 	class Camera { 
@@ -337,9 +408,6 @@ public class Drawing extends PApplet {
 		  } 
 	}
 	
-	 public static double logB(double x, double base) {
-		    return Math.log(x) / Math.log(base);
-	  }
 }
 
 
