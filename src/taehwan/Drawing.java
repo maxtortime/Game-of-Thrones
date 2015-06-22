@@ -25,7 +25,7 @@ public class Drawing extends PApplet {
 	Table esrbColor;
 	PFont DIN,GOT;
 	PImage CROWN,Footer;
-	final int w = 50; // 사각형의 크기
+	final int w = 30; // 사각형의 크기
 	int d = 50; // 사각형간의 차이
 	final int rbx = 110; // 첫 사각형의 x 좌표 
 	final int h = 10;
@@ -129,7 +129,6 @@ public class Drawing extends PApplet {
 				TableRow row = table.getRow(start);
 				
 				subTable.addRow(row);
-				
 				nameSet.add(row.getString("name"));
 				genreSet.add(row.getString("genre"));
 				platformSet.add(row.getString("platform"));
@@ -147,7 +146,6 @@ public class Drawing extends PApplet {
 			
 			namePos.put(name, positions);
 			nameColor.put(name, color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-			isNameClicked.put(name, false);
 		}
 		
 		int idx = 0;
@@ -159,17 +157,21 @@ public class Drawing extends PApplet {
 			
 			//records.getValue().sort("when");
 
-			
-			for (int i = 1 ; i < records.getValue().getRowCount()-1 ; i++)
+			/*
+			for (int i = 0 ; i < records.getValue().getRowCount()-1 ; i++)
 				records.getValue().getRow(i).setInt("pos", i);
-			
+			*/
 
 			for (TableRow row : records.getValue().rows()) {
+				println(idx,row.getInt("pos"));
 				namePos.get(row.getString("name"))[idx] = row.getInt("pos");
+				
 			}
 			
 			idx++;
 		}
+		
+		
 
 		for (String genre : genreSet) {
 			TableRow rgb = genrecolor.findRow(genre, "genrename");
@@ -304,7 +306,7 @@ public class Drawing extends PApplet {
 			int nextWeek = 0;
 			float temprY = 800;
 			int nextPos = 0;
-			println(sub.getRowCount());
+			//println(sub.getRowCount());
 			Table before = subRecords.get(wn+1);
 			
 			/*
@@ -332,16 +334,18 @@ public class Drawing extends PApplet {
 				publisher = row.getString("publisher");
 				//int week = row.getInt("week");
 				
-				if(wn+1 <408)
-					nextPos = namePos.get(name)[wn+1];
-				else 
+				if(wn+1>=408)
 					nextPos = -1;
+				else
+					nextPos = namePos.get(name)[wn+1];
 				
+				/*
 				if (nextPos==-1) {
 					nextWeek = 0;
 				}
 				else
 					nextWeek = before.getInt(nextPos-1, "week");
+					*/
 				
 				if(iswhenChangeClicked)
 					color = whenYearColorMap.get(when);
@@ -367,7 +371,6 @@ public class Drawing extends PApplet {
 					overedplatform = platform;
 					overedWhen = when;
 					
-					println(whenYearColorMap.get(when),color);
 					TableRow rgb = yearcolor.findRow(when, "year");
 					
 					if (whenYearColorMap.get(overedWhen)==color) {
@@ -404,7 +407,7 @@ public class Drawing extends PApplet {
 					}
 				}
 				if (nextPos != -1) {
-					strokeWeight(5);
+					strokeWeight(7);
 					line(rX+w,rY+w/2,rbx+wn*(wInterval*w-1),rbx+nextPos*(w+d)+w/2);
 				}
 				noStroke();
