@@ -50,7 +50,7 @@ public class Drawing extends PApplet {
 	int nrbx = 0;
 	int nrby = 0;
 	
-	float sales = 0.226f;
+	float sales = 0.1439f;
 	float normal = 0.226f;
 	
 	float zoom = normal;
@@ -367,6 +367,7 @@ public class Drawing extends PApplet {
 				Rectangle cur;
 				
 				if (isSales) {
+					
 					float nrY = 0;
 					float nNrY = 0;
 			
@@ -744,6 +745,7 @@ public class Drawing extends PApplet {
     				if(isStacked) {
     					isStacked =false;
     					forRecordStack.pop();
+    					
     				}
     				else {
     					isStacked = true;
@@ -885,7 +887,7 @@ public class Drawing extends PApplet {
 
 			fill(255);
 			textSize(30);
-			text(overedName+"   sales: "+overedWeek,worldCamera.pos.x+dx+1000,worldCamera.pos.y+dy+65);
+			text(overedName+"   SALES: "+overedWeek,worldCamera.pos.x+dx+1000,worldCamera.pos.y+dy+65);
 			
 			
 		}
@@ -992,6 +994,7 @@ public class Drawing extends PApplet {
 				
 		
 		forRecordStack.push(splitedRecords);
+		
 		redraw();
 	}
 	
