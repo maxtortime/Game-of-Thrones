@@ -188,7 +188,7 @@ public class Drawing extends PApplet {
 		forRecordStack.push(subRecords);
 		
 		for (String genre : genreSet) {
-			TableRow rgb = genrecolor.findRow(genre, "genrename");
+			TableRow rgb = genrecolor.findRow(genre, "genre");
 			genreColorMap.put(genre,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}
 		for (String platform : platformSet) {
@@ -205,7 +205,7 @@ public class Drawing extends PApplet {
 			
 		
 		for (Integer when : whenYearSet) {
-			TableRow rgb = yearcolor.findRow(Integer.toString(when), "year");
+			TableRow rgb = yearcolor.findRow(Integer.toString(when), "whenyear");
 			whenYearColorMap.put(when,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
 		}		
 		for (String esrb : esrbSet) {
@@ -320,14 +320,10 @@ public class Drawing extends PApplet {
 				
 			}
 			
-			
-			
-			
 			dif = 0;
 			sub = each.getValue();
 		
 			int nextWeek = 0;
-			float temprY = 800;
 			int nextPos = 0;
 			Table before = subRecords.get(wn+1);
 			
@@ -371,15 +367,9 @@ public class Drawing extends PApplet {
 				Rectangle cur;
 				
 				if (isSales) {
-					
-					
-					
 					float nrY = 0;
 					float nNrY = 0;
-					
-					
-					
-					
+			
 					nrY = 960 - week/100;					
 					
 					nNrY = 960 - nextWeek/100;
@@ -392,9 +382,6 @@ public class Drawing extends PApplet {
 					nNrY = nNrY+ 2000 +nextPos*d;
 					
 					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1800);
-					temprY = nrY;							
-			
-					
 					cur = new Rectangle(nrX-10,(int) nrY-10, w+20,h+20);
 					
 					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
@@ -503,8 +490,6 @@ public class Drawing extends PApplet {
 					int rY = rbx+pos*(w+d);
 					cur = new Rectangle(rX, rY, w,w);
 
-					
-					
 					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 						//마우스를 댄 그 사각형
 						overedName = name;
@@ -763,6 +748,81 @@ public class Drawing extends PApplet {
     				else {
     					isStacked = true;
     					
+    					Set<String> set = null;
+    					Set<Integer> set2;
+    					Table colorcsv = null;
+    					
+    					LinkedHashMap<String, Integer> map = null;
+    					LinkedHashMap<Integer, Integer> map2;
+    					
+    					String type = new String();
+    					
+    					if(isPlatformChangeClicked) {
+    						type = "platform";
+    					
+    					}
+    					else if (isGenreChangeClicked) {
+    						type = "genre";
+    					
+    					}
+    					else if (isEsrbChangeClicked) {
+    						type = "esrb";
+    					
+    					}
+    					else if (isPublisherChangedClicked) {
+    						type = "publisher";
+    					
+    					}
+    					else if (iswhenChangeClicked) {
+    						type = "whenyear";
+    					
+    					}
+    					
+    					if(type.equals("platform")) {
+    						set = platformSet;
+    						map = platformColorMap;
+    						colorcsv = platformColor;
+    					} else if (type.equals("genre")) {
+    						set = genreSet;
+    						map =  genreColorMap;
+    						colorcsv = genrecolor;
+    					} else if (type.equals("esrb")) {
+    						set = esrbSet;
+    						map = esrbColorMap;
+    						colorcsv = esrbColor;
+    					} else if (type.equals("publisher")) {
+    						set = publisherSet;
+    						map = publisherColorMap;
+    						colorcsv = publisherColor;
+    					} else if (type.equals("whenyear")) {
+    						set2 = whenYearSet;
+    						map2 = whenYearColorMap;
+    						colorcsv = yearcolor;
+    						
+    						for (Integer each : set2) {
+    							TableRow rgb = colorcsv.findRow(Integer.toString(each), type);
+    							try {
+    								map2.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+    							} catch (NullPointerException e) {
+    								map2.put(each,color(192,192,192));
+    							}
+    							map2.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+    						}		
+    					}
+    					
+    					if(set!=null && map != null) {
+    						for (String each : set) {
+    							TableRow rgb = colorcsv.findRow(each, type);
+    							
+    							try {
+    								map.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),rgb.getInt("a")));
+    							} catch (NullPointerException e) {
+    								map.put(each,color(192,192,192));
+    							}
+    						}		
+    					}
+    					
+    					
     				}
     				delay(200);
     			}
@@ -877,6 +937,57 @@ public class Drawing extends PApplet {
 			}
 			
 			idx++;
+		}
+
+		Set<String> set = null;
+		Set<Integer> set2;
+		Table colorcsv = null;
+		
+		LinkedHashMap<String, Integer> map = null;
+		LinkedHashMap<Integer, Integer> map2;
+		
+		if(type.equals("platform")) {
+			set = platformSet;
+			map = platformColorMap;
+			colorcsv = platformColor;
+		} else if (type.equals("genre")) {
+			set = genreSet;
+			map =  genreColorMap;
+			colorcsv = genrecolor;
+		} else if (type.equals("esrb")) {
+			set = esrbSet;
+			map = esrbColorMap;
+			colorcsv = esrbColor;
+		} else if (type.equals("publisher")) {
+			set = publisherSet;
+			map = publisherColorMap;
+			colorcsv = publisherColor;
+		} else if (type.equals("whenyear")) {
+			set2 = whenYearSet;
+			map2 = whenYearColorMap;
+			colorcsv = yearcolor;
+			
+			for (Integer each : set2) {
+				TableRow rgb = colorcsv.findRow(Integer.toString(each), type);
+				try {
+					map2.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+				} catch (NullPointerException e) {
+					map2.put(each,color(192,192,192));
+				}
+				map2.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+			}		
+		}
+		
+		if(set!=null && map != null) {
+			for (String each : set) {
+				TableRow rgb = colorcsv.findRow(each, type);
+				
+				try {
+					map.put(each,color(rgb.getInt("r"),rgb.getInt("g"),rgb.getInt("b"),255));
+				} catch (NullPointerException e) {
+					map.put(each,color(192,192,192));
+				}
+			}		
 		}
 				
 		
