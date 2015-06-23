@@ -1,5 +1,9 @@
 package taehwan;
 
+
+
+
+
 import java.awt.Rectangle;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -19,6 +23,12 @@ import processing.data.TableRow;
 
 @SuppressWarnings("serial")
 public class Drawing extends PApplet {
+	public static void main(String args[])
+    {
+      PApplet.main(new String[] { taehwan.Drawing.class.getName() });
+    }
+	
+
 	Table table;
 	Table genrecolor;
 	Table yearcolor;
@@ -87,7 +97,7 @@ public class Drawing extends PApplet {
 	int UiColor = color(94,31,47);
 	int color = 0;
 	final int xBase = 0;
-	final int yBase = -110;
+	final int yBase = -250;
 	boolean iswhenChangeClicked = false;
 	boolean isGenreChangeClicked = true; // 가장 최초이므로
 	boolean isEsrbChangeClicked = false;	
@@ -296,7 +306,7 @@ public class Drawing extends PApplet {
 		for (Entry<Integer, Table> each : forRecordStack.peek().entrySet()) {
 			wn = each.getKey(); // get index
 			
-			println(wn);
+			
 			if(wn % 51 == 0 || wn == 407) {
 				//rect(rbx+wn*(wInterval*w-1),0,width,height);
 				strokeWeight(30);
@@ -385,7 +395,7 @@ public class Drawing extends PApplet {
 					temprY = nrY;							
 			
 					
-					cur = new Rectangle(nrX,(int) nrY, w,h);
+					cur = new Rectangle(nrX-10,(int) nrY-10, w+20,h+20);
 					
 					if (mousePressed && cur.contains((mouseX+worldCamera.pos.x)/zoom, (mouseY+worldCamera.pos.y)/zoom)) {
 						//마우스를 댄 그 사각형
@@ -600,7 +610,13 @@ public class Drawing extends PApplet {
 		fill(150,150,0,100);
 		rect(-500,1000, 80000,20);
 		}
-		
+		if(isSales){			
+
+			image(CROWN,-700,700);
+			CROWN.resize(0, 500);
+
+		}
+			
 		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
@@ -748,6 +764,7 @@ public class Drawing extends PApplet {
     					isStacked = true;
     					
     				}
+    				delay(200);
     			}
     			
     			if(isStacked) {
@@ -799,17 +816,16 @@ public class Drawing extends PApplet {
     			
     			fill(255,255,255,0);
     			rect(downRectX+1407,downRectY+17,120,69);
-    			if(isSales)
+    			if(isSales){
     				image(salesIcon,downRectX+1407,downRectY+17);
     				
 
-			fill(255);
-			textSize(50);
-			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
-			
-			
+    			}
+    				
 
-									
+			fill(255);
+			textSize(30);
+			text(overedName+"   sales: "+overedWeek,worldCamera.pos.x+dx+1000,worldCamera.pos.y+dy+65);
 			
 			
 		}
@@ -916,10 +932,13 @@ public class Drawing extends PApplet {
 		    } 
 
 		  }
+		
 		}  
-			
+	
+	
 	}
 	
+
 	
 	
 
