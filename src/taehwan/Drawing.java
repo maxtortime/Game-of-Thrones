@@ -361,65 +361,28 @@ public class Drawing extends PApplet {
 				Rectangle cur;
 				
 				if (isSales) {
+					
+					
+					
 					float nrY = 0;
 					float nNrY = 0;
-	
-					if(week<30000){
-						nrY = 800 - week/300*temp1; 
-					}else if(week<40000){
-						nrY = 700 - week/400*temp2;
-					}else if(week<50000){
-						nrY = 600 - week/500*temp3;
-					}else if(week<60000){
-						nrY = 500 - week/600*temp4;
-					}else if(week<80000){
-						nrY = 400 - week/800*temp5;
-					}else if(week<100000){
-						nrY = 300 - week/1000*temp6;
-					}else if(week<150000){
-						nrY = 200 - week/1500*temp7;
-					}else if(week<250000){
-						nrY = 100 - week/2500*temp8;
-					}else if(week<400000){
-						nrY = 100 - week/4000*temp8;
-					}else{
-						nrY = -week/10000*temp9;
-					}
-	
-					if (Math.abs(temprY-nrY)<h){
-						nrY = temprY - h;
-					}
-	
-					if(nextWeek<30000){
-						nNrY = 800 - nextWeek/300*temp1; 
-					}else if(nextWeek<40000){
-						nNrY = 700 - nextWeek/400*temp2;
-					}else if(nextWeek<50000){
-						nNrY = 600 - nextWeek/500*temp3;
-					}else if(nextWeek<60000){
-						nNrY = 500 - nextWeek/600*temp4;
-					}else if(nextWeek<80000){
-						nNrY = 400 - nextWeek/800*temp5;
-					}else if(nextWeek<100000){
-						nNrY = 300 - nextWeek/1000*temp6;
-					}else if(nextWeek<150000){
-						nNrY = 200 - nextWeek/1500*temp7;
-					}else if(nextWeek<250000){
-						nNrY = 100 - nextWeek/2500*temp8;
-					}else if(nextWeek<400000){
-						nNrY = 100 - nextWeek/4000*temp8;
-					}else{
-						nNrY = -nextWeek/10000*temp9;
-					}
-	
-					if (Math.abs(temprY-nrY)<h){
-						nrY = temprY - h;
-					}
-					nrY += 200;
-					nNrY += 200;
+					
+					
+					
+					
+					nrY = 960 - week/100;					
+					
+					nNrY = 960 - nextWeek/100;
+					
+					
+					if(week > 200000)nrY = -2000;
+					if(nextWeek > 200000)nNrY = -2000;
+					
+					nrY = nrY+ 2000 +pos*d;
+					nNrY = nNrY+ 2000 +nextPos*d;
 					
 					int nrX = (int) (nrbx+(wn-1)*(wInterval*w-1)-1800);
-					temprY = nrY;
+					temprY = nrY;							
 			
 					
 					cur = new Rectangle(nrX,(int) nrY, w,h);
@@ -514,14 +477,14 @@ public class Drawing extends PApplet {
 					if (nextPos != -1) {
 						strokeWeight(7);
 						stroke(color);
-						line(nrX+w,nrY+h/2,nrX+w+d*wInterval,nNrY+h/2);
+						line(nrX+w,nrY+h/2,nrX-w/2+d*wInterval,nNrY+h/2);
 					}
 					
 					
 					noStroke();
 					fill(color);
 
-					rect(nrX,nrY-10,w,w);
+					rect(nrX,nrY,w,w);
 					cur = new Rectangle(nrX,(int) nrY, w,h);
 
 				}
@@ -633,6 +596,11 @@ public class Drawing extends PApplet {
 				
 			}
 		}
+		if(isSales){
+		fill(150,150,0,100);
+		rect(-500,1000, 80000,20);
+		}
+		
 		
 		// UI 부분으로 카메라의 적용을 받지 않음
 		// 모든 좌표에 항상 카메라의 좌표와 dx,dy 를 각각 더해줘야함
@@ -838,7 +806,12 @@ public class Drawing extends PApplet {
 			fill(255);
 			textSize(50);
 			text(overedName+"...week: "+overedWeek,worldCamera.pos.x+dx+700,worldCamera.pos.y+dy+65);
+			
+			
 
+									
+			
+			
 		}
 	
 	void changeRecord(String type) {
