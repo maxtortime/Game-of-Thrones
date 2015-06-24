@@ -2,7 +2,6 @@ package taehwan;
 
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,33 +21,45 @@ public class Drawing extends PApplet {
 	ArrayList<Record> records = new ArrayList<Record>();
 	
 	final int w = 50;
-	final int d = 15; // 사각형간의 차이
+	final int d = 50; // 사각형간의 차이
 	final int rbx = 20; 
 	final int rectNum = 30;
 	final int weekNum = 52;
+	final int wRatio = 2;
 	
 	float zoom = 1;
-
+	int MAXWEEK,MINWEEK;
+	
 	Camera worldCamera;
 	Set<String> nameSet = new LinkedHashSet<String>();
 	Set<String> genreSet = new LinkedHashSet<String>();
 	Set<String> platformSet = new LinkedHashSet<String>();
 	
-	LinkedHashMap<String,Table> subRecords = new LinkedHashMap<String,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
+	ArrayList<Table> tables = new ArrayList<Table>();
+	
+	LinkedHashMap<Integer,Table> subRecords = new LinkedHashMap<Integer,Table>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,int[]> namePos = new LinkedHashMap<String,int[]>(); // 게임 이름마다 주별로 랭킹을 담고 있는 Map 
 	LinkedHashMap<String,Integer> nameColor = new LinkedHashMap<String,Integer>(); // 게임 제목마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> genreColor = new LinkedHashMap<String,Integer>(); // 게임 장르마다 색깔을 담는 Map
 	LinkedHashMap<String,Integer> platformColor = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
-	LinkedHashMap<String,Integer> platformPartSum = new LinkedHashMap<String,Integer>(); // 게임 플랫폼마다 색깔을 담는 Map
+	LinkedHashMap<Integer,Integer> maxWeekByRank = new LinkedHashMap<Integer, Integer>();
 	
 	Random forColor = new Random(); // color 를 랜덤으로 주기 위해서
 
+	IntDict rankPos;
+	
 	public void setup() {
 		size(960,960);
-		table = loadTable("../2007_.csv","header");
+		//table = loadTable("../2007_.csv","header");
 		
-		println(table.getRowCount() + " total rows in table");
+		for (int year=2007 ; year < 2012 ; year++) {
+			String filename = "../" + year + "_.csv";
+			tables.add(loadTable(filename,"header"));
+		}
 		
+		table = tables.get(0);
+		MINWEEK = table.getIntList("week").min();
+		MAXWEEK = table.getIntList("week").max();
 		
 		// Table 을 30개씩 쪼개기 위함
 		for (int week = 1 ; week < weekNum ; week++) {
@@ -61,7 +72,7 @@ public class Drawing extends PApplet {
 			
 			for (int start = rectNum*(week-1); start < end ; start++) {
 				TableRow row = table.getRow(start);
-
+				
 				subTable.addRow(row);
 				
 				nameSet.add(row.getString("name"));
@@ -69,9 +80,9 @@ public class Drawing extends PApplet {
 				platformSet.add(row.getString("platform"));
 				
 				records.add(new Record(row));
+				
 			}
-			
-			subRecords.put(subTable.getRow(0).getString("date"),subTable);
+			subRecords.put(week,subTable);
 		}
 		
 		// 이름 별로 랭킹을 담는 역할
@@ -85,28 +96,7 @@ public class Drawing extends PApplet {
 		
 		int idx = 0;
 		
-		for (String genre : genreSet) {
-			genreColor.put(genre,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-			
-			
-		}
-		
-		for (String platform : platformSet) {
-			int sum = 0;
-			/*
-			for (Record r : records) {
-				if(r.getPlatform().equals(platform)) {
-					sum+= r.getWeek();
-				}
-			}
-			*/
-			platformColor.put(platform,color(forColor.nextInt(255),forColor.nextInt(255),forColor.nextInt(255)));
-			//platformPartSum.put(platform, sum);
-		}
-	
-		
-		for (Entry<String,Table> records : subRecords.entrySet()) {
-
+		for (Entry<Integer,Table> records : subRecords.entrySet()) {
 			//records.getValue().sort("platform");
 			IntDict temp = records.getValue().getIntDict("platform", "week");
 			println(idx+", "+temp);
@@ -142,65 +132,38 @@ public class Drawing extends PApplet {
 		worldCamera.draw();
 		scale(zoom);
 		
-		for(int wn = 1 ; wn < weekNum-1 ; wn++)
-			for (int pos = 0 ; pos < rectNum ; pos++) {
-				int nextPos = 0;
-					
+		
+		for (Entry<Integer, Table> each : subRecords.entrySet()) {
+			int wn = each.getKey();
+			
+			Table sub = each.getValue();
+
+			for (TableRow row : sub.rows()) {
+				int pos = row.getInt("pos");
+				String name = row.getString("name");
+				
+				int nextPos = namePos.get(name)[wn];
+				int color = nameColor.get(name);
+				
 				fill(0);
-				int colors  = 0;
+				// name is too long
+				if (name.length()<15)
+					text(name,rbx+w*(wn*2-2),rbx+pos*(w+d));
+				else
+					text(name.substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
 				
-				for (Entry<String,int[]> each : namePos.entrySet()) {
-					if(pos == each.getValue()[wn]) {
-						
-						//color by etc ...
-						for (Record r : records) {
-							if (r.getName().equals(each.getKey())) {
-								//genre
-								//colors = genreColor.get(r.getGenre());
-								
-								//flatform
-								//colors = platformColor.get(r.getPlatform());
-								break;
-							}
-						}
-						
-						
-						//color by name
-						colors = nameColor.get(each.getKey());
-						
-						try {
-							nextPos = each.getValue()[wn+1];
-						}
-						catch(ArrayIndexOutOfBoundsException e) {
-							nextPos = pos;
-						}
-						
-						if (nextPos ==-1)
-							nextPos = pos;
-						
-						//not height
-						if (each.getKey().length()<15) // 
-							text(each.getKey(),rbx+w*(wn*2-2),rbx+pos*(w+d));
-						else
-							text(each.getKey().substring(0,7)+"...",rbx+w*(wn*2-2),rbx+pos*(w+d));
-						break;
-					}
-					else {
-						colors = 192;
-						nextPos = -100; // null 인 애들은 quad를 안 그려주려고
-					}
-				}
-
-				fill(colors);
+				fill(color);
+				
 				rect(rbx+w*(wn*2-2),rbx+pos*(w+d),w,w);
-
+				//rect(rbx+w*(wn*2-2),rbx+maxH+pos*d,w,h);
 				
-				if (nextPos != -100 ) 
+				if (nextPos != -1)
 					quad(rbx+w*(wn*2-1),rbx+pos*(w+d),
 						rbx+w*wn*2,rbx+nextPos*(w+d),
 						rbx+w*wn*2,rbx+w+nextPos*(w+d),
 						rbx+w*(wn*2-1),rbx+pos*(w+d)+w);
 			}
+		}
 	}
 	
 	class Camera { 
